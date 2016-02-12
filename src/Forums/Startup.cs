@@ -1,4 +1,5 @@
-﻿using Forums.Filters;
+﻿using Entities;
+using Forums.Filters;
 using Forums.log4net;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
@@ -30,6 +31,8 @@ namespace Forums
             env.ConfigureLog4Net("log4net.xml");
 
             //builder.AddEnvironmentVariables();
+
+            
             Configuration = builder.Build();
         }
 
@@ -45,8 +48,7 @@ namespace Forums
                     //options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"])
                     options.UseSqlServer(Configuration["ConnectionString"])
                     .CommandTimeout(30)
-                    .MaxBatchSize(300)
-                    );
+                    .MaxBatchSize(300));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -65,6 +67,15 @@ namespace Forums
         {
             loggerFactory.AddProvider(new Log4NetProvider());
 
+
+            // For more details on creating database during deployment see http://go.microsoft.com/fwlink/?LinkID=615859
+            using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
+                    .CreateScope())
+            {
+                serviceScope.ServiceProvider.GetService<ApplicationDbContext>().Database.Migrate();
+                serviceScope.ServiceProvider.GetService<ApplicationDbContext>().EnsureSeedData();
+            }
+
             if (env.IsDevelopment())
             {
                 app.UseBrowserLink();
@@ -74,18 +85,6 @@ namespace Forums
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-
-                // For more details on creating database during deployment see http://go.microsoft.com/fwlink/?LinkID=615859
-                try
-                {
-                    using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
-                        .CreateScope())
-                    {
-                        serviceScope.ServiceProvider.GetService<ApplicationDbContext>()
-                             .Database.Migrate();
-                    }
-                }
-                catch { }
             }
 
             app.UseIISPlatformHandler(options => options.AuthenticationDescriptions.Clear());

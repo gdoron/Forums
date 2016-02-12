@@ -5,11 +5,11 @@ using Microsoft.Data.Entity.Metadata;
 using Microsoft.Data.Entity.Migrations;
 using Forums.Models;
 
-namespace Forums.Migrations
+namespace Entities.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20160209232333_AddingPostsAndForum")]
-    partial class AddingPostsAndForum
+    [Migration("20160212002557_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -27,6 +27,8 @@ namespace Forums.Migrations
                     b.Property<string>("Name");
 
                     b.HasKey("Id");
+
+                    b.HasAnnotation("Relational:TableName", "Forums");
                 });
 
             modelBuilder.Entity("Entities.Post", b =>
@@ -38,12 +40,20 @@ namespace Forums.Migrations
 
                     b.Property<DateTime?>("LastChangedDate");
 
-                    b.Property<DateTime>("PublishDate");
+                    b.Property<DateTime>("PublishDate")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("Relational:GeneratedValueSql", "getdate()");
+
+                    b.Property<int?>("ReplyToPostId");
 
                     b.Property<string>("Text")
-                        .HasAnnotation("Relational:ColumnType", "nvarchar(MAX)");
+                        .IsRequired();
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PublishDate", "LastChangedDate");
+
+                    b.HasAnnotation("Relational:TableName", "Posts");
                 });
 
             modelBuilder.Entity("Forums.Models.ApplicationUser", b =>
@@ -91,7 +101,7 @@ namespace Forums.Migrations
                     b.HasIndex("NormalizedUserName")
                         .HasAnnotation("Relational:Name", "UserNameIndex");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetUsers");
+                    b.HasAnnotation("Relational:TableName", "Users");
                 });
 
             modelBuilder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityRole", b =>
@@ -112,7 +122,7 @@ namespace Forums.Migrations
                     b.HasIndex("NormalizedName")
                         .HasAnnotation("Relational:Name", "RoleNameIndex");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetRoles");
+                    b.HasAnnotation("Relational:TableName", "Roles");
                 });
 
             modelBuilder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityRoleClaim<string>", b =>
@@ -129,7 +139,7 @@ namespace Forums.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetRoleClaims");
+                    b.HasAnnotation("Relational:TableName", "RoleClaims");
                 });
 
             modelBuilder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserClaim<string>", b =>
@@ -146,7 +156,7 @@ namespace Forums.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetUserClaims");
+                    b.HasAnnotation("Relational:TableName", "UserClaims");
                 });
 
             modelBuilder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserLogin<string>", b =>
@@ -162,7 +172,7 @@ namespace Forums.Migrations
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetUserLogins");
+                    b.HasAnnotation("Relational:TableName", "UserLogins");
                 });
 
             modelBuilder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole<string>", b =>
@@ -173,7 +183,7 @@ namespace Forums.Migrations
 
                     b.HasKey("UserId", "RoleId");
 
-                    b.HasAnnotation("Relational:TableName", "AspNetUserRoles");
+                    b.HasAnnotation("Relational:TableName", "UserRoles");
                 });
 
             modelBuilder.Entity("Entities.Post", b =>
@@ -181,6 +191,10 @@ namespace Forums.Migrations
                     b.HasOne("Entities.Forum")
                         .WithMany()
                         .HasForeignKey("ForumId");
+
+                    b.HasOne("Entities.Post")
+                        .WithMany()
+                        .HasForeignKey("ReplyToPostId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityRoleClaim<string>", b =>

@@ -24,16 +24,21 @@ namespace Forums.Controllers
 
         public IActionResult Index()
         {
-            var users = _context.Users.ToList();
+            //var users = _context.Users.ToList();
+
             var newUser = new ApplicationUser()
                               {
                                   UserName = "Doron",
                                   Email = "doron@jifiti.com",
                                   EmailConfirmed = true
                               };
-            _context.Add(newUser);
+            //_context.Add(newUser);
 
-            var forums = _context.Forums.ToList();
+            //var forums = _context.Forums.ToList();
+
+            var foo = _context.Posts.Single(x => x.Text == "Root level");
+            var thirdPost = _context.Posts.Single(x => x.Text == "third post");
+
             var posts = _context.Posts.ToList();
 
             return View();
