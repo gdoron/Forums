@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Forums.Models;
 using System.Linq;
 using Microsoft.Data.Entity;
+using System.Reflection;
 
 namespace Entities
 {
@@ -71,7 +72,7 @@ namespace Entities
         public static void UseDbSetNamesAsTableNames(this DbContext dbContext, ModelBuilder modelBuilder)
         {
 
-            var dbSets = dbContext.GetType().GetProperties()
+            var dbSets = dbContext.GetType().GetRuntimeProperties()
                 .Where(p => p.PropertyType.Name == "DbSet`1")
                 .Select(p => new
                                  {

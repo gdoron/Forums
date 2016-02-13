@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Forums.Models;
 
 namespace Entities
 {
@@ -14,6 +13,9 @@ namespace Entities
         public DateTime PublishDate { get; set; }
 
         public DateTime? LastChangedDate { get; set; }
+
+        public String UserId { get; set; }
+        public ApplicationUser User { get; set; }
 
         public int ForumId { get; set; }
 

@@ -24,15 +24,31 @@ namespace Forums.Controllers
 
         public IActionResult Index()
         {
-            //var users = _context.Users.ToList();
+            var users = _context.PostTest.ToList();
 
-            var newUser = new ApplicationUser()
+            var newUser = new ApplicationUser
                               {
                                   UserName = "Doron",
                                   Email = "doron@jifiti.com",
                                   EmailConfirmed = true
                               };
-            //_context.Add(newUser);
+
+            _context.Add(newUser);
+            newUser = new ApplicationUser
+                          {
+                              UserName = "Moshe",
+                              Email = "moshe@j123ifiti.com",
+                              EmailConfirmed = true
+                          };
+            _context.Add(newUser);
+
+            newUser = new ApplicationUser
+                          {
+                              UserName = "David",
+                              Email = "David123@aaajifiti.com",
+                              EmailConfirmed = true
+                          };
+            _context.Add(newUser);
 
             //var forums = _context.Forums.ToList();
 
