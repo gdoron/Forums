@@ -16,9 +16,7 @@ namespace Forums.Models
         public virtual DbSet<Post> Posts { get; set; }
         public virtual DbSet<Forum> Forums { get; set; }
 
-        public virtual DbSet<HierarchyPost> HierarchyPosts { get; set; }
-
-        public virtual IEnumerable<Post> PostTest => Posts.FromSql(@"WITH    cte ( Id, ParentPostId, Depth ) 
+        public virtual IEnumerable<Post> HierarchyPosts => Posts.FromSql(@"WITH    cte ( Id, ParentPostId, Depth ) 
               AS ( SELECT   Id,
 							ReplyToPostId,
 							0 as TheLevel

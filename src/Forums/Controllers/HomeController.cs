@@ -24,7 +24,7 @@ namespace Forums.Controllers
 
         public IActionResult Index()
         {
-            var users = _context.PostTest.ToList();
+            var postsHie = _context.HierarchyPosts.ToList();
 
             var newUser = new ApplicationUser
                               {
