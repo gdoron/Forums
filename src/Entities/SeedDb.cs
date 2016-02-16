@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Forums.Models;
 using System.Linq;
-using Microsoft.Data.Entity;
 using System.Reflection;
+using Forums.Models;
 using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.Data.Entity;
 
 namespace Entities
 {
@@ -14,6 +14,17 @@ namespace Entities
         {
             if (!context.Posts.Any())
             {
+                var firstUser = new ApplicationUser
+                                    {
+                                        Email = "test1111@test.test",
+                                        UserName = "Test1111"
+                                    };
+
+                var secondUser = new ApplicationUser
+                                     {
+                                         Email = "test222@test.test",
+                                         UserName = "Test2222"
+                                     };
                 var newsForum = new Forum
                                     {
                                         Name = "News",
@@ -31,15 +42,16 @@ namespace Entities
                                     {
                                         Forum = newsForum,
                                         Text = "Root level",
-                                        PublishDate = DateTime.Now
-
+                                        PublishDate = DateTime.Now,
+                                        User = firstUser
                                     };
                 var secondPost = new Post
                                      {
                                          Forum = newsForum,
                                          Text = "Second post",
                                          PublishDate = DateTime.Now,
-                                         ReplyToPost = firstPost
+                                         ReplyToPost = firstPost,
+                                         User = secondUser
                                      };
 
                 var thirdPost = new Post
@@ -47,7 +59,8 @@ namespace Entities
                                         Forum = newsForum,
                                         Text = "third post",
                                         PublishDate = DateTime.Now,
-                                        ReplyToPost = firstPost
+                                        ReplyToPost = firstPost,
+                                        User = firstUser
                                     };
 
                 var post4 = new Post
@@ -55,16 +68,18 @@ namespace Entities
                                     Forum = newsForum,
                                     Text = "Child to 3",
                                     PublishDate = DateTime.Now,
-                                    ReplyToPost = thirdPost
+                                    ReplyToPost = thirdPost,
+                                    User = secondUser
                                 };
 
                 var moreRoot = new Post
                                    {
                                        Forum = newsForum,
                                        Text = "Another root",
-                                       PublishDate = DateTime.Now
+                                       PublishDate = DateTime.Now,
+                                       User = firstUser
                                    };
-
+                context.Users.AddRange(firstUser, secondUser);
                 context.Posts.AddRange(firstPost, secondPost, thirdPost, post4, moreRoot);
                 var adminRole = new IdentityRole
                                     {
@@ -85,7 +100,6 @@ namespace Entities
 
         public static void UseDbSetNamesAsTableNames(this DbContext dbContext, ModelBuilder modelBuilder)
         {
-
             var dbSets = dbContext.GetType().GetRuntimeProperties()
                 .Where(p => p.PropertyType.Name == "DbSet`1")
                 .Select(p => new
@@ -102,7 +116,6 @@ namespace Entities
                 {
                     type.Relational().TableName = dbset.PropertyName;
                 }
-
             }
         }
     }

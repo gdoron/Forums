@@ -8,8 +8,8 @@ using Forums.Models;
 namespace Entities.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20160214085043_CreateHierarchyView")]
-    partial class CreateHierarchyView
+    [Migration("20160216193128_TrickEFWithFalseHierarchyTable")]
+    partial class TrickEFWithFalseHierarchyTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -29,6 +29,32 @@ namespace Entities.Migrations
                     b.HasKey("Id");
 
                     b.HasAnnotation("Relational:TableName", "Forums");
+                });
+
+            modelBuilder.Entity("Entities.HierarchyPost", b =>
+                {
+                    b.Property<int>("PostId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("Depth");
+
+                    b.Property<int>("ForumId");
+
+                    b.Property<DateTime?>("LastChangedDate");
+
+                    b.Property<DateTime>("PublishDate");
+
+                    b.Property<int?>("ReplyToPostId");
+
+                    b.Property<string>("Text");
+
+                    b.Property<string>("UserId");
+
+                    b.Property<string>("UserName");
+
+                    b.HasKey("PostId");
+
+                    b.HasAnnotation("Relational:TableName", "HierarchyPosts");
                 });
 
             modelBuilder.Entity("Entities.Post", b =>

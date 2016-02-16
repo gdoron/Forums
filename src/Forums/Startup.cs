@@ -1,7 +1,8 @@
-﻿using System.Threading.Tasks;
-using Entities;
+﻿using Entities;
 using Forums.Filters;
 using Forums.log4net;
+using Forums.Models;
+using Forums.Services;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity.EntityFramework;
@@ -9,12 +10,6 @@ using Microsoft.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Forums.Models;
-using Forums.Services;
-using Microsoft.AspNet.Authentication.Google;
-using Microsoft.AspNet.Authentication.OAuth;
-using Microsoft.AspNet.Http;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Forums
 {
@@ -25,7 +20,7 @@ namespace Forums
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true);
             if (env.IsDevelopment())
             {
                 // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
@@ -143,12 +138,7 @@ namespace Forums
 
             // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-            });
+            app.UseMvc(routes => { routes.MapRoute("default", "{controller=Home}/{action=Index}/{id?}"); });
         }
 
         // Entry point for the application.
