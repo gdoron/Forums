@@ -1,4 +1,5 @@
-﻿using Entities;
+﻿using System.Threading.Tasks;
+using Entities;
 using Forums.Filters;
 using Forums.log4net;
 using Microsoft.AspNet.Builder;
@@ -10,7 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Forums.Models;
 using Forums.Services;
-using Microsoft.Data.Entity.Internal;
+using Microsoft.AspNet.Authentication.Google;
+using Microsoft.AspNet.Authentication.OAuth;
+using Microsoft.AspNet.Http;
+using Microsoft.Extensions.WebEncoders;
 
 namespace Forums
 {
@@ -32,7 +36,7 @@ namespace Forums
 
             //builder.AddEnvironmentVariables();
 
-            
+
             Configuration = builder.Build();
         }
 
@@ -41,14 +45,17 @@ namespace Forums
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var connection = @"Server=(localdb)\mssqllocaldb;Database=EFGetStarted.AspNet5.NewDb;Trusted_Connection=True;";
+
             // Add framework services.
             services.AddEntityFramework()
                 .AddSqlServer()
                 .AddDbContext<ApplicationDbContext>(options =>
                     //options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"])
+                    //options.UseSqlServer(connection)
                     options.UseSqlServer(Configuration["ConnectionString"])
-                    .CommandTimeout(30)
-                    .MaxBatchSize(300));
+                        .CommandTimeout(30)
+                        .MaxBatchSize(300));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -62,7 +69,6 @@ namespace Forums
             services.AddTransient<EntityFrameworkFilter>();
 
             services.Configure<AuthMessageSenderOptions>(Configuration);
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -73,7 +79,7 @@ namespace Forums
 
             // For more details on creating database during deployment see http://go.microsoft.com/fwlink/?LinkID=615859
             using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
-                    .CreateScope())
+                .CreateScope())
             {
                 serviceScope.ServiceProvider.GetService<ApplicationDbContext>().Database.Migrate();
                 serviceScope.ServiceProvider.GetService<ApplicationDbContext>().EnsureSeedData();
@@ -95,12 +101,45 @@ namespace Forums
             app.UseStaticFiles();
 
             app.UseIdentity();
-            
+
             app.UseFacebookAuthentication(options =>
             {
                 options.AppId = Configuration["Authentication:Facebook:AppId"];
                 options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
             });
+
+
+            //app.UseOAuthAuthentication(new OAuthOptions
+            //                               {
+            //                                   AuthenticationScheme = "Google-AccessToken",
+            //                                   DisplayName = "Google-AccessToken(oauth{1})",
+            //                                   ClientId = Configuration["google:clientid"],
+            //                                   ClientSecret = Configuration["google:clientsecret"],
+            //                                   CallbackPath = new PathString("/signin-google-token"),
+            //                                   AuthorizationEndpoint = GoogleDefaults.AuthorizationEndpoint,
+            //                                   TokenEndpoint = GoogleDefaults.TokenEndpoint,
+            //                                   Scope = {"openid", "profile", "email"},
+            //                                   SaveTokensAsClaims = true
+            //                               });
+
+            //// See config.json
+            //// https://console.developers.google.com/project
+            //app.UseGoogleAuthentication(new GoogleOptions
+            //                                {
+            //                                    ClientId = Configuration["google:clientid"],
+            //                                    ClientSecret = Configuration["google:clientsecret"],
+            //                                    DisplayName = "Second google",
+            //                                    Events = new OAuthEvents()
+            //                                                 {
+            //                                                     OnRemoteError = ctx =>
+
+            //                                                     {
+            //                                                         ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.UrlEncode(ctx.Error.Message));
+            //                                                         ctx.HandleResponse();
+            //                                                         return Task.FromResult(0);
+            //                                                     }
+            //                                                 }
+            //                                });
 
             // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
 

@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Forums.Filters;
 using Forums.Models;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Internal;
 
 namespace Forums.Controllers
 {
-    [ServiceFilter(typeof(EntityFrameworkFilter))]
+    [ServiceFilter(typeof (EntityFrameworkFilter))]
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -24,7 +20,7 @@ namespace Forums.Controllers
 
         public IActionResult Index()
         {
-            var postsHie = _context.HierarchyPosts.ToList();
+            //var postsHie = _context.HierarchyPosts.ToList();
 
             var newUser = new ApplicationUser
                               {
@@ -70,7 +66,7 @@ namespace Forums.Controllers
         public IActionResult Contact()
         {
             ViewData["Message"] = "Meie take a look Your page.....1232.";
-            var newUser = new ApplicationUser() {UserName = "doron", Email = "grdoron@gmail.com"};
+            var newUser = new ApplicationUser {UserName = "doron", Email = "grdoron@gmail.com"};
             _context.Users.Add(newUser);
             return View();
         }
@@ -79,6 +75,5 @@ namespace Forums.Controllers
         {
             return View();
         }
-
     }
 }

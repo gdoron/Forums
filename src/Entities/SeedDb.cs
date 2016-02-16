@@ -4,6 +4,7 @@ using Forums.Models;
 using System.Linq;
 using Microsoft.Data.Entity;
 using System.Reflection;
+using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace Entities
 {
@@ -65,6 +66,19 @@ namespace Entities
                                    };
 
                 context.Posts.AddRange(firstPost, secondPost, thirdPost, post4, moreRoot);
+                var adminRole = new IdentityRole
+                                    {
+                                        Name = "Admin",
+                                        NormalizedName = "Admin"
+                                    };
+                context.Roles.Add(adminRole);
+
+                //var adminUsers = new ApplicationUser()
+                //                     {
+                //                         Email = "doron@jifiti.com",
+                //                         UserName = "Doron jifiti"
+                //                     };
+
                 context.SaveChanges();
             }
         }
