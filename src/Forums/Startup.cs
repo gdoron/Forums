@@ -60,6 +60,9 @@ namespace Forums
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
             services.AddTransient<EntityFrameworkFilter>();
+
+            services.Configure<AuthMessageSenderOptions>(Configuration);
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -92,6 +95,12 @@ namespace Forums
             app.UseStaticFiles();
 
             app.UseIdentity();
+            
+            app.UseFacebookAuthentication(options =>
+            {
+                options.AppId = Configuration["Authentication:Facebook:AppId"];
+                options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
+            });
 
             // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
 

@@ -69,7 +69,7 @@ namespace Forums.Controllers
 
         public IActionResult Contact()
         {
-            ViewData["Message"] = "Your TESTING page.....1232.";
+            ViewData["Message"] = "Meie take a look Your page.....1232.";
             var newUser = new ApplicationUser() {UserName = "doron", Email = "grdoron@gmail.com"};
             _context.Users.Add(newUser);
             return View();
