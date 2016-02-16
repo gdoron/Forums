@@ -1,10 +1,13 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Entities;
+using Forums.Models;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Data.Entity;
-using Entities;
-using Forums.Models;
 
 namespace Forums.Controllers
 {
@@ -20,8 +23,8 @@ namespace Forums.Controllers
         // GET: Posts
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Posts.Include(p => p.Forum).Include(p => p.ReplyToPost).Include(p => p.User);
-            return View(await applicationDbContext.ToListAsync());
+            var posts = _context.Posts.Include(p => p.Forum).Include(p => p.ReplyToPost).Include(p => p.User);
+            return View(await posts.ToListAsync());
         }
 
         // GET: Posts/Details/5

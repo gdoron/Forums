@@ -8,8 +8,8 @@ using Forums.Models;
 namespace Entities.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20160212002557_Initial")]
-    partial class Initial
+    [Migration("20160216222621_Second")]
+    partial class Second
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -31,6 +31,34 @@ namespace Entities.Migrations
                     b.HasAnnotation("Relational:TableName", "Forums");
                 });
 
+            modelBuilder.Entity("Entities.HierarchyPost", b =>
+                {
+                    b.Property<int>("PostId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("Depth");
+
+                    b.Property<int>("ForumId");
+
+                    b.Property<DateTime?>("LastChangedDate");
+
+                    b.Property<DateTime>("PublishDate");
+
+                    b.Property<int?>("ReplyToPostId");
+
+                    b.Property<int>("RootId");
+
+                    b.Property<string>("Text");
+
+                    b.Property<string>("UserId");
+
+                    b.Property<string>("UserName");
+
+                    b.HasKey("PostId");
+
+                    b.HasAnnotation("Relational:TableName", "HierarchyPosts");
+                });
+
             modelBuilder.Entity("Entities.Post", b =>
                 {
                     b.Property<int>("Id")
@@ -48,6 +76,8 @@ namespace Entities.Migrations
 
                     b.Property<string>("Text")
                         .IsRequired();
+
+                    b.Property<string>("UserId");
 
                     b.HasKey("Id");
 
@@ -195,6 +225,10 @@ namespace Entities.Migrations
                     b.HasOne("Entities.Post")
                         .WithMany()
                         .HasForeignKey("ReplyToPostId");
+
+                    b.HasOne("Forums.Models.ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityRoleClaim<string>", b =>

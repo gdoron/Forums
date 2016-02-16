@@ -45,6 +45,8 @@ namespace Entities.Migrations
 
                     b.Property<int?>("ReplyToPostId");
 
+                    b.Property<int>("RootId");
+
                     b.Property<string>("Text");
 
                     b.Property<string>("UserId");

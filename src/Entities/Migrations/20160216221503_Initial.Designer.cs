@@ -8,8 +8,8 @@ using Forums.Models;
 namespace Entities.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20160213195343_ConnectPostAndUser")]
-    partial class ConnectPostAndUser
+    [Migration("20160216221503_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -29,6 +29,34 @@ namespace Entities.Migrations
                     b.HasKey("Id");
 
                     b.HasAnnotation("Relational:TableName", "Forums");
+                });
+
+            modelBuilder.Entity("Entities.HierarchyPost", b =>
+                {
+                    b.Property<int>("PostId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("Depth");
+
+                    b.Property<int>("ForumId");
+
+                    b.Property<DateTime?>("LastChangedDate");
+
+                    b.Property<DateTime>("PublishDate");
+
+                    b.Property<int?>("ReplyToPostId");
+
+                    b.Property<int>("RootId");
+
+                    b.Property<string>("Text");
+
+                    b.Property<string>("UserId");
+
+                    b.Property<string>("UserName");
+
+                    b.HasKey("PostId");
+
+                    b.HasAnnotation("Relational:TableName", "HierarchyPosts");
                 });
 
             modelBuilder.Entity("Entities.Post", b =>

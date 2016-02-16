@@ -22,7 +22,6 @@ namespace Forums.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
-        private readonly RoleManager<ApplicationUser> _roleManager;
         private readonly ILogger _logger;
 
         public AccountController(
@@ -30,14 +29,12 @@ namespace Forums.Controllers
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
             ISmsSender smsSender,
-            ILoggerFactory loggerFactory,
-            RoleManager<ApplicationUser> roleManager)
+            ILoggerFactory loggerFactory)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _smsSender = smsSender;
-            _roleManager = roleManager;
             _logger = loggerFactory.CreateLogger<AccountController>();
         }
 

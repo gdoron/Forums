@@ -14,7 +14,7 @@ namespace Entities
 
         public DateTime? LastChangedDate { get; set; }
 
-        public String UserId { get; set; }
+        public string UserId { get; set; }
         public ApplicationUser User { get; set; }
 
         public int ForumId { get; set; }
