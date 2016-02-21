@@ -1,8 +1,10 @@
-﻿using Entities;
+﻿using System.Threading.Tasks;
+using Entities;
 using Forums.Filters;
 using Forums.log4net;
 using Forums.Models;
 using Forums.Services;
+using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity.EntityFramework;
@@ -10,6 +12,7 @@ using Microsoft.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.WebEncoders;
 using Newtonsoft.Json;
 
 namespace Forums
@@ -66,12 +69,13 @@ namespace Forums
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
             services.AddTransient<EntityFrameworkFilter>();
+            services.AddTransient<DbSeeder>();
 
             services.Configure<AuthMessageSenderOptions>(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public async void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, DbSeeder dbSeeder)
         {
             loggerFactory.AddProvider(new Log4NetProvider());
 
@@ -81,7 +85,6 @@ namespace Forums
                 .CreateScope())
             {
                 serviceScope.ServiceProvider.GetService<ApplicationDbContext>().Database.Migrate();
-                serviceScope.ServiceProvider.GetService<ApplicationDbContext>().EnsureSeedData();
             }
 
             if (env.IsDevelopment())
@@ -100,11 +103,21 @@ namespace Forums
             app.UseStaticFiles();
 
             app.UseIdentity();
-
+            await dbSeeder.EnsureSeedData();
             app.UseFacebookAuthentication(options =>
             {
                 options.AppId = Configuration["Authentication:Facebook:AppId"];
                 options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
+                options.Events = new OAuthEvents()
+                                     {
+                                         OnRemoteError = ctx =>
+
+                                         {
+                                             ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.UrlEncode(ctx.Error.Message));
+                                             ctx.HandleResponse();
+                                             return Task.FromResult(0);
+                                         }
+                                     };
             });
 
 
@@ -142,7 +155,11 @@ namespace Forums
 
             // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
 
-            app.UseMvc(routes => { routes.MapRoute("default", "{controller=Home}/{action=Index}/{id?}"); });
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute("default", "{controller=Home}/{action=Index}/{id?}");
+                //routes.MapRoute("DefaultApiPost", "Api/{controller}/{action}");
+            });
         }
 
         // Entry point for the application.

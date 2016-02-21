@@ -1,13 +1,10 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Forums.Models;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
-using Entities;
-using Forums.Models;
 
-namespace Forums.Controllers
+namespace Forums.Controllers.Api
 {
     [Route("api/HierarchyPosts")]
     [Produces("application/json")]

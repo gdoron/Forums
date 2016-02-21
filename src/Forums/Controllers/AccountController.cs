@@ -161,6 +161,7 @@ namespace Forums.Controllers
             // Request a redirect to the external login provider.
             var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new {ReturnUrl = returnUrl});
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+
             return new ChallengeResult(provider, properties);
         }
 
@@ -175,6 +176,10 @@ namespace Forums.Controllers
             {
                 return RedirectToAction(nameof(Login));
             }
+
+            var a = info.ExternalPrincipal.Claims;
+            var b = info.ExternalPrincipal.Identities.ToList();
+            var c = info.ExternalPrincipal.Identity;
 
             // Sign in the user with this external login provider if the user already has a login.
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
@@ -197,7 +202,8 @@ namespace Forums.Controllers
                 ViewData["ReturnUrl"] = returnUrl;
                 ViewData["LoginProvider"] = info.LoginProvider;
                 var email = info.ExternalPrincipal.FindFirstValue(ClaimTypes.Email);
-                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel {Email = email});
+                var name = info.ExternalPrincipal.FindFirst(ClaimTypes.Name).Value;
+                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel {Email = email, Name = name});
             }
         }
 
@@ -221,7 +227,7 @@ namespace Forums.Controllers
                 {
                     return View("ExternalLoginFailure");
                 }
-                var user = new ApplicationUser {UserName = model.Email, Email = model.Email};
+                var user = new ApplicationUser {UserName = model.Email, Email = model.Email, NormalizedUserName = model.Name};
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {

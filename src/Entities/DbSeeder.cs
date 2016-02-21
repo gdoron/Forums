@@ -1,30 +1,59 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using System.Threading.Tasks;
 using Forums.Models;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Data.Entity;
 
 namespace Entities
 {
-    public static class ApplicationDbContextExtension
+    public class DbSeeder
     {
-        public static void EnsureSeedData(this ApplicationDbContext context)
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public DbSeeder(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
-            if (!context.Posts.Any())
+            _context = context;
+            _userManager = userManager;
+        }
+
+        public async Task EnsureSeedData()
+        {
+            if (!_context.Posts.Any())
             {
+                var adminRole = new IdentityRole
+                                    {
+                                        Name = "Admin",
+                                        NormalizedName = "ADMIN"
+                                    };
+                _context.Roles.Add(adminRole);
+
                 var firstUser = new ApplicationUser
                                     {
                                         Email = "test1111@test.test",
-                                        UserName = "Test1111"
+                                        UserName = "Test1111",
+                                        EmailConfirmed = true
                                     };
 
                 var secondUser = new ApplicationUser
                                      {
                                          Email = "test222@test.test",
-                                         UserName = "Test2222"
+                                         UserName = "Test2222",
+                                         EmailConfirmed = true
                                      };
+
+
+                await _userManager.CreateAsync(firstUser, "Aa123456!");
+                await _userManager.CreateAsync(secondUser, "Aa123456!");
+
+                var adminUser = new ApplicationUser {Email = "grdoron@gmail.com", UserName = "grdoron@gmail.com", EmailConfirmed = true};
+
+                await _userManager.CreateAsync(adminUser, "Aa123456!");
+                await _userManager.AddToRoleAsync(adminUser, "Admin");
+
+
                 var newsForum = new Forum
                                     {
                                         Name = "News",
@@ -35,7 +64,7 @@ namespace Entities
                                          Name = "Sport",
                                          Description = "Sport forum"
                                      };
-                context.Forums.AddRange(new List<Forum> {newsForum, sportForum});
+                _context.Forums.AddRange(new List<Forum> {newsForum, sportForum});
 
 
                 var firstPost = new Post
@@ -79,14 +108,7 @@ namespace Entities
                                        PublishDate = DateTime.Now,
                                        User = firstUser
                                    };
-                context.Users.AddRange(firstUser, secondUser);
-                context.Posts.AddRange(firstPost, secondPost, thirdPost, post4, moreRoot);
-                var adminRole = new IdentityRole
-                                    {
-                                        Name = "Admin",
-                                        NormalizedName = "Admin"
-                                    };
-                context.Roles.Add(adminRole);
+                _context.Posts.AddRange(firstPost, secondPost, thirdPost, post4, moreRoot);
 
                 //var adminUsers = new ApplicationUser()
                 //                     {
@@ -94,28 +116,7 @@ namespace Entities
                 //                         UserName = "Doron jifiti"
                 //                     };
 
-                context.SaveChanges();
-            }
-        }
-
-        public static void UseDbSetNamesAsTableNames(this DbContext dbContext, ModelBuilder modelBuilder)
-        {
-            var dbSets = dbContext.GetType().GetRuntimeProperties()
-                .Where(p => p.PropertyType.Name == "DbSet`1")
-                .Select(p => new
-                                 {
-                                     PropertyName = p.Name,
-                                     EntityType = p.PropertyType.GenericTypeArguments.Single()
-                                 })
-                .ToArray();
-
-            foreach (var type in modelBuilder.Model.GetEntityTypes())
-            {
-                var dbset = dbSets.SingleOrDefault(s => s.EntityType == type.ClrType);
-                if (dbset != null)
-                {
-                    type.Relational().TableName = dbset.PropertyName;
-                }
+                _context.SaveChanges();
             }
         }
     }

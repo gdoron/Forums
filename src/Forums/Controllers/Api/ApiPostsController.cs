@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
 using Entities;
 using Forums.Filters;
 using Forums.Models;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc;
+using Microsoft.Data.Entity;
 
-namespace Forums.Controllers
+namespace Forums.Controllers.Api
 {
     [Produces("application/json")]
     [Route("api/Posts")]
