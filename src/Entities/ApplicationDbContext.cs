@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Entities;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
-using Microsoft.Data.Entity.Metadata.Builders;
 
 namespace Forums.Models
 {
@@ -17,6 +13,17 @@ namespace Forums.Models
         public virtual DbSet<Forum> Forums { get; set; }
         public virtual DbSet<HierarchyPost> HierarchyPosts { get; set; }
 
+        public IQueryable<HierarchyPost> GeHierarchyPost(int rootId)
+        {
+            return HierarchyPosts
+                .Where(x => x.RootId == rootId)
+                .OrderBy(x => x.ReplyToPostId ?? -1)
+                .ThenByDescending(x => x.IsImportantReply)
+                .ThenBy(x => x.PostId);
+        } 
+
+        //public IQueryable<HierarchyPost> A => HierarchyPosts.FromSql("select * from HierarchyPosts order by IsNull(ReplyToPostId,-1), isImportantReply desc, PostId");
+        
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -35,6 +42,7 @@ namespace Forums.Models
                 .IsRequired();
             postBuilder.HasOne(x => x.ReplyToPost).WithMany(x => x.Replies).OnDelete(DeleteBehavior.Restrict);
             postBuilder.Property(x => x.PublishDate).HasDefaultValueSql("getdate()");
+            postBuilder.Property(x => x.LastChangedDate).ValueGeneratedOnAddOrUpdate();
             postBuilder.HasIndex(x => new { x.PublishDate, x.LastChangedDate });
         }
     }

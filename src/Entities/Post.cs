@@ -25,6 +25,9 @@ namespace Entities
 
         public Post ReplyToPost { get; set; }
 
+        public bool IsDeleted { get; set; }
+        public bool IsImportantReply { get; set; }
+
         public virtual List<Post> Replies { get; set; }
     }
 }
