@@ -27,7 +27,7 @@ namespace Forums.Controllers.Api
                 return HttpBadRequest(ModelState);
             }
 
-            var posts = await _context.HierarchyPosts.Where(x => x.RootId == id).ToListAsync();
+            var posts = await _context.GeHierarchyPost(id).ToListAsync();
 
             if (posts.Count == 0)
             {
