@@ -18,17 +18,16 @@ namespace Entities
                 .OrderBy(x => x.ReplyToPostId ?? -1)
                 .ThenByDescending(x => x.IsImportantReply)
                 .ThenBy(x => x.PostId);
-        } 
+        }
 
         //public IQueryable<HierarchyPost> A => HierarchyPosts.FromSql("select * from HierarchyPosts order by IsNull(ReplyToPostId,-1), isImportantReply desc, PostId");
-        
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
             this.UseDbSetNamesAsTableNames(builder);
 
             builder.Entity<HierarchyPost>().HasKey(x => x.PostId);
-
 
             var postBuilder = builder.Entity<Post>();
 

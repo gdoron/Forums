@@ -33,6 +33,6 @@ namespace Entities
 
         public virtual List<Post> Replies { get; set; }
 
-        public List<PostType> PostTypes { get; set; }
+        public PostType PostType { get; set; }
     }
 }

@@ -2,6 +2,8 @@ using System;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Metadata;
+using Microsoft.Data.Entity.Migrations;
+using Entities;
 
 namespace Entities.Migrations
 {
@@ -14,85 +16,7 @@ namespace Entities.Migrations
                 .HasAnnotation("ProductVersion", "7.0.0-rc1-16348")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("Entities.Forum", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Description");
-
-                    b.Property<string>("Name");
-
-                    b.HasKey("Id");
-
-                    b.HasAnnotation("Relational:TableName", "Forums");
-                });
-
-            modelBuilder.Entity("Entities.HierarchyPost", b =>
-                {
-                    b.Property<int>("PostId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("Depth");
-
-                    b.Property<int>("ForumId");
-
-                    b.Property<bool>("IsDeleted");
-
-                    b.Property<bool>("IsImportantReply");
-
-                    b.Property<DateTime?>("LastChangedDate");
-
-                    b.Property<DateTime>("PublishDate");
-
-                    b.Property<int?>("ReplyToPostId");
-
-                    b.Property<int>("RootId");
-
-                    b.Property<string>("Text");
-
-                    b.Property<string>("UserId");
-
-                    b.Property<string>("UserName");
-
-                    b.HasKey("PostId");
-
-                    b.HasAnnotation("Relational:TableName", "HierarchyPosts");
-                });
-
-            modelBuilder.Entity("Entities.Post", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("ForumId");
-
-                    b.Property<bool>("IsDeleted");
-
-                    b.Property<bool>("IsImportantReply");
-
-                    b.Property<DateTime?>("LastChangedDate")
-                        .ValueGeneratedOnAddOrUpdate();
-
-                    b.Property<DateTime>("PublishDate")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("Relational:GeneratedValueSql", "getdate()");
-
-                    b.Property<int?>("ReplyToPostId");
-
-                    b.Property<string>("Text")
-                        .IsRequired();
-
-                    b.Property<string>("UserId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PublishDate", "LastChangedDate");
-
-                    b.HasAnnotation("Relational:TableName", "Posts");
-                });
-
-            modelBuilder.Entity("Forums.Models.ApplicationUser", b =>
+            modelBuilder.Entity("Entities.ApplicationUser", b =>
                 {
                     b.Property<string>("Id");
 
@@ -138,6 +62,114 @@ namespace Entities.Migrations
                         .HasAnnotation("Relational:Name", "UserNameIndex");
 
                     b.HasAnnotation("Relational:TableName", "Users");
+                });
+
+            modelBuilder.Entity("Entities.Forum", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.HasAnnotation("Relational:TableName", "Forums");
+                });
+
+            modelBuilder.Entity("Entities.HierarchyPost", b =>
+                {
+                    b.Property<int>("PostId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Body");
+
+                    b.Property<int>("Depth");
+
+                    b.Property<int>("ForumId");
+
+                    b.Property<bool>("IsDeleted");
+
+                    b.Property<bool>("IsImportantReply");
+
+                    b.Property<bool>("IsModified");
+
+                    b.Property<DateTime?>("LastChangedDate");
+
+                    b.Property<DateTime>("PublishDate");
+
+                    b.Property<int?>("ReplyToPostId");
+
+                    b.Property<int>("RootId");
+
+                    b.Property<string>("Title");
+
+                    b.Property<string>("UserId");
+
+                    b.Property<string>("UserName");
+
+                    b.HasKey("PostId");
+
+                    b.HasAnnotation("Relational:TableName", "HierarchyPosts");
+                });
+
+            modelBuilder.Entity("Entities.Post", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Body");
+
+                    b.Property<int>("ForumId");
+
+                    b.Property<bool>("IsDeleted");
+
+                    b.Property<bool>("IsImportantReply");
+
+                    b.Property<bool>("IsModified");
+
+                    b.Property<DateTime?>("LastChangedDate")
+                        .ValueGeneratedOnAddOrUpdate();
+
+                    b.Property<int>("PostType");
+
+                    b.Property<DateTime>("PublishDate")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("Relational:GeneratedValueSql", "getdate()");
+
+                    b.Property<int?>("ReplyToPostId");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasAnnotation("MaxLength", 200);
+
+                    b.Property<string>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ForumId", "PublishDate", "LastChangedDate");
+
+                    b.HasAnnotation("Relational:TableName", "Posts");
+                });
+
+            modelBuilder.Entity("Entities.PostRevision", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Body");
+
+                    b.Property<string>("ChangingUserId");
+
+                    b.Property<DateTime>("CreationDate");
+
+                    b.Property<int>("PostId");
+
+                    b.Property<string>("Title")
+                        .IsRequired();
+
+                    b.HasKey("Id");
                 });
 
             modelBuilder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityRole", b =>
@@ -232,9 +264,20 @@ namespace Entities.Migrations
                         .WithMany()
                         .HasForeignKey("ReplyToPostId");
 
-                    b.HasOne("Forums.Models.ApplicationUser")
+                    b.HasOne("Entities.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("Entities.PostRevision", b =>
+                {
+                    b.HasOne("Entities.ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ChangingUserId");
+
+                    b.HasOne("Entities.Post")
+                        .WithMany()
+                        .HasForeignKey("PostId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityRoleClaim<string>", b =>
@@ -246,14 +289,14 @@ namespace Entities.Migrations
 
             modelBuilder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Forums.Models.ApplicationUser")
+                    b.HasOne("Entities.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNet.Identity.EntityFramework.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Forums.Models.ApplicationUser")
+                    b.HasOne("Entities.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId");
                 });
@@ -264,7 +307,7 @@ namespace Entities.Migrations
                         .WithMany()
                         .HasForeignKey("RoleId");
 
-                    b.HasOne("Forums.Models.ApplicationUser")
+                    b.HasOne("Entities.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId");
                 });

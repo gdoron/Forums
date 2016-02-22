@@ -1,15 +1,18 @@
-﻿namespace Entities
+﻿using System;
+
+namespace Entities
 {
+    [Flags]
     public enum PostType
     {
         Torah = 0,
         News = 1,
         Sport = 2,
-        Terror = 3,
-        Picture = 4,
-        Video = 5,
-        Help = 6,
-        OpinionArticle = 7,
-        Foreign = 9,
+        Terror = 4,
+        Picture = 8,
+        Video = 16,
+        Help = 32,
+        OpinionArticle = 64,
+        Foreign = 128,
     }
 }

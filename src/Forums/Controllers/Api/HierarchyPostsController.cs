@@ -18,7 +18,7 @@ namespace Forums.Controllers.Api
 
         // GET: api/HierarchyPost/5
         [HttpGet("{id}", Name = "GetHierarchyPost")]
-        
+
         public async Task<IActionResult> GetHierarchyPost([FromRoute] int id)
         {
             if (!ModelState.IsValid)

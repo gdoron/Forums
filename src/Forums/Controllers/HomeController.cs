@@ -28,7 +28,7 @@ namespace Forums.Controllers
             ViewData["Message"] = "Your application TEST page.";
 
 
-            var hierarchyPosts = _context.HierarchyPosts.ToList();
+            //var hierarchyPosts = _context.HierarchyPosts.ToList();
             var p = _context.Posts.SingleOrDefault(x => x.Id == 1);
             var p1 = _context.Posts.SingleOrDefault(x => x.Id == 0);
             var p2 = _context.Posts.ToList();

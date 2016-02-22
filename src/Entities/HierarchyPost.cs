@@ -16,6 +16,7 @@ namespace Entities
         public string UserId { get; set; }
         public int RootId { get; set; }
         public bool IsDeleted { get; set; }
+        public bool IsModified { get; set; }
         public bool IsImportantReply { get; set; }
     }
 }
