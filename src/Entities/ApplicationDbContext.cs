@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Entities;
+﻿using System.Linq;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 
-namespace Forums.Models
+namespace Entities
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
@@ -33,17 +31,19 @@ namespace Forums.Models
 
 
             var postBuilder = builder.Entity<Post>();
-            // need to create Default value for this to work. 
-            //postBuilder.Property(x => x.PublishDate).ValueGeneratedOnAdd();
 
-            postBuilder.Property(x => x.Text)
+            postBuilder.Property(x => x.Title).HasMaxLength(200)
                 // the default for string
                 //.HasColumnType("nvarchar(MAX)");
                 .IsRequired();
             postBuilder.HasOne(x => x.ReplyToPost).WithMany(x => x.Replies).OnDelete(DeleteBehavior.Restrict);
-            postBuilder.Property(x => x.PublishDate).HasDefaultValueSql("getdate()");
+            postBuilder.Property(x => x.PublishDate).ValueGeneratedOnAdd().HasDefaultValueSql("getdate()");
             postBuilder.Property(x => x.LastChangedDate).ValueGeneratedOnAddOrUpdate();
-            postBuilder.HasIndex(x => new { x.PublishDate, x.LastChangedDate });
+            postBuilder.HasIndex(x => new { x.ForumId, x.PublishDate, x.LastChangedDate});
+
+
+            var postRevisionBuilder = builder.Entity<PostRevision>();
+            postRevisionBuilder.Property(x => x.Title).IsRequired();
         }
     }
 }

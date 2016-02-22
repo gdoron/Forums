@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Forums.Models;
+using Entities;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
 

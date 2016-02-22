@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Forums.Models;
+﻿using Entities;
 using Microsoft.AspNet.Mvc.Filters;
 
 namespace Forums.Filters

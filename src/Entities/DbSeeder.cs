@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Forums.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 
@@ -21,103 +19,117 @@ namespace Entities
 
         public async Task EnsureSeedData()
         {
-            if (!_context.Posts.Any())
+            var adminRole = new IdentityRole
+                                {
+                                    Name = "Admin",
+                                    NormalizedName = "ADMIN"
+                                };
+            _context.Roles.Add(adminRole);
+
+            var firstUser = new ApplicationUser
+                                {
+                                    Email = "test1111@test.test",
+                                    UserName = "Test1111",
+                                    EmailConfirmed = true
+                                };
+
+            var secondUser = new ApplicationUser
+                                 {
+                                     Email = "test222@test.test",
+                                     UserName = "Test2222",
+                                     EmailConfirmed = true
+                                 };
+
+            var adminUser = new ApplicationUser {Email = "grdoron@gmail.com", UserName = "grdoron@gmail.com", EmailConfirmed = true};
+
+
+            if (!_context.Users.Any())
             {
-                var adminRole = new IdentityRole
-                                    {
-                                        Name = "Admin",
-                                        NormalizedName = "ADMIN"
-                                    };
-                _context.Roles.Add(adminRole);
-
-                var firstUser = new ApplicationUser
-                                    {
-                                        Email = "test1111@test.test",
-                                        UserName = "Test1111",
-                                        EmailConfirmed = true
-                                    };
-
-                var secondUser = new ApplicationUser
-                                     {
-                                         Email = "test222@test.test",
-                                         UserName = "Test2222",
-                                         EmailConfirmed = true
-                                     };
-
-
                 await _userManager.CreateAsync(firstUser, "Aa123456!");
                 await _userManager.CreateAsync(secondUser, "Aa123456!");
 
-                var adminUser = new ApplicationUser {Email = "grdoron@gmail.com", UserName = "grdoron@gmail.com", EmailConfirmed = true};
 
                 await _userManager.CreateAsync(adminUser, "Aa123456!");
                 await _userManager.AddToRoleAsync(adminUser, "Admin");
+            }
+
+            var scoops = new Forum
+                             {
+                                 Name = "סקופים",
+                                 Description = @"מידע חדשותי חם ובזמן אמת המובא על ידי הגולשים. חלקם עיתונאי רוטר.נט, המחוברים בזימוניות למוקדי חדשות."
+                             };
+
+            var politics = new Forum
+                               {
+                                   Name = "פוליטיקה ואקטואליה",
+                                   Description = "מדיניות, הנהגת המדינה, אקטואליה ואזרחות"
+                               };
 
 
-                var newsForum = new Forum
-                                    {
-                                        Name = "News",
-                                        Description = "News forum"
-                                    };
-                var sportForum = new Forum
+            if (!_context.Forums.Any())
+            {
+                _context.Forums.AddRange(new List<Forum> {scoops, politics});
+            }
+
+            if (!_context.Posts.Any())
+            {
+
+                for (var i = 1; i <= 500; i++)
+                {
+                    var firstPost = new Post
+                                        {
+                                            Forum = scoops,
+                                            Title = "Root level " + i,
+                                            User = firstUser,
+                                            Body = "Bla bla bla",
+                                            PostTypes = new List<PostType> {PostType.News, PostType.Foreign}
+                                        };
+                    var reply1 = new Post
                                      {
-                                         Name = "Sport",
-                                         Description = "Sport forum"
-                                     };
-                _context.Forums.AddRange(new List<Forum> {newsForum, sportForum});
-
-
-                var firstPost = new Post
-                                    {
-                                        Forum = newsForum,
-                                        Text = "Root level",
-                                        PublishDate = DateTime.Now,
-                                        User = firstUser
-                                    };
-                var secondPost = new Post
-                                     {
-                                         Forum = newsForum,
-                                         Text = "Second post",
-                                         PublishDate = DateTime.Now,
+                                         Forum = scoops,
+                                         Title = "FirstReply " + i,
                                          ReplyToPost = firstPost,
                                          User = secondUser
                                      };
 
-                var thirdPost = new Post
-                                    {
-                                        Forum = newsForum,
-                                        Text = "third post",
-                                        PublishDate = DateTime.Now,
-                                        ReplyToPost = firstPost,
-                                        User = firstUser
-                                    };
+                    var reply2 = new Post
+                                     {
+                                         Forum = scoops,
+                                         Title = "Second Reply " + i,
+                                         ReplyToPost = firstPost,
+                                         User = firstUser
+                                     };
 
-                var post4 = new Post
-                                {
-                                    Forum = newsForum,
-                                    Text = "Child to 3",
-                                    PublishDate = DateTime.Now,
-                                    ReplyToPost = thirdPost,
-                                    User = secondUser
-                                };
+                    var replytoReply2 = new Post
+                                            {
+                                                Forum = scoops,
+                                                Title = "Reply to second Reply " + i,
+                                                ReplyToPost = firstPost,
+                                                User = firstUser
+                                            };
 
-                var moreRoot = new Post
-                                   {
-                                       Forum = newsForum,
-                                       Text = "Another root",
-                                       PublishDate = DateTime.Now,
-                                       User = firstUser
-                                   };
-                _context.Posts.AddRange(firstPost, secondPost, thirdPost, post4, moreRoot);
+                    var reply3 = new Post
+                                     {
+                                         Forum = scoops,
+                                         Title = "Third reply " + i,
+                                         ReplyToPost = firstPost,
+                                         User = secondUser,
+                                         IsImportantReply = true
+                                         
+                                     };
 
-                //var adminUsers = new ApplicationUser()
-                //                     {
-                //                         Email = "doron@jifiti.com",
-                //                         UserName = "Doron jifiti"
-                //                     };
 
-                _context.SaveChanges();
+                    var reply4 = new Post
+                                     {
+                                         Forum = scoops,
+                                         Title = "fourth reply " + i,
+                                         User = secondUser,
+                                         ReplyToPost = reply2
+                                     };
+                    _context.Posts.AddRange(firstPost, reply1, reply2, reply3, reply4, replytoReply2);
+                }
             }
+            _context.SaveChanges();
         }
     }
 }

@@ -2,7 +2,6 @@
 using Entities;
 using Forums.Filters;
 using Forums.log4net;
-using Forums.Models;
 using Forums.Services;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;

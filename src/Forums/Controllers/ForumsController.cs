@@ -1,9 +1,6 @@
 using System.Linq;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.Data.Entity;
 using Entities;
-using Forums.Models;
 
 namespace Forums.Controllers
 {

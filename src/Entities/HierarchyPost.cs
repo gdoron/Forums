@@ -10,11 +10,11 @@ namespace Entities
         public int ForumId { get; set; }
         public DateTime? LastChangedDate { get; set; }
         public DateTime PublishDate { get; set; }
-        public string Text { get; set; }
+        public string Title { get; set; }
+        public string Body { get; set; }
         public string UserName { get; set; }
         public string UserId { get; set; }
         public int RootId { get; set; }
-
         public bool IsDeleted { get; set; }
         public bool IsImportantReply { get; set; }
     }

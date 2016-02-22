@@ -1,6 +1,6 @@
 ﻿using System.Linq;
+using Entities;
 using Forums.Filters;
-using Forums.Models;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.Logging;
 

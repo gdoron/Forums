@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Entities;
 using Forums.Filters;
-using Forums.Models;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
