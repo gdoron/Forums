@@ -465,7 +465,7 @@ namespace Forums.Controllers
 
         private async Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return await _userManager.FindByIdAsync(HttpContext.User.GetUserId());
+            return await _userManager.FindByIdAsync(User.GetUserId());
         }
 
         private IActionResult RedirectToLocal(string returnUrl)

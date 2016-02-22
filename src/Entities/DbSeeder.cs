@@ -40,20 +40,16 @@ namespace Entities
         {
             var scoops = new Forum
                              {
-                                 Name = "Scoops",
-                                 Description = @"News bla bla bla."
 
-//Name = "ρχετιν",
-//                Description = @"ξιγς ηγωεϊι ην εαζξο ΰξϊ δξεαΰ ςμ ιγι δβεμωιν. ημχν ςιϊεπΰι ψεθψ.πθ, δξηεαψιν αζιξεπιεϊ μξεχγι ηγωεϊ."
-            };
+                                 Name = "Χ΅Χ§Χ•Χ¤Χ™Χ",
+                                 Description = @"ΧΧ™Χ“ΧΆ Χ—Χ“Χ©Χ•ΧªΧ™ Χ—Χ Χ•Χ‘Χ–ΧΧ ΧΧΧª Χ”ΧΧ•Χ‘Χ ΧΆΧ Χ™Χ“Χ™ Χ”Χ’Χ•ΧΧ©Χ™Χ. Χ—ΧΧ§Χ ΧΆΧ™ΧªΧ•Χ ΧΧ™ Χ¨Χ•ΧΧ¨.Χ Χ, Χ”ΧΧ—Χ•Χ‘Χ¨Χ™Χ Χ‘Χ–Χ™ΧΧ•Χ Χ™Χ•Χª ΧΧΧ•Χ§Χ“Χ™ Χ—Χ“Χ©Χ•Χª."
+                             };
 
             var politics = new Forum
                                {
-                                   Name = "Politics",
-                                   Description = "Politics bla bla bla"
-                //                   Name = "τεμιθιχδ εΰχθεΰμιδ",
-                //Description = "ξγιπιεϊ, δπδβϊ δξγιπδ, ΰχθεΰμιδ εΰζψηεϊ"
-            };
+                                   Name = "Χ¤Χ•ΧΧ™ΧΧ™Χ§Χ” Χ•ΧΧ§ΧΧ•ΧΧΧ™Χ”",
+                                   Description = "ΧΧ“Χ™Χ Χ™Χ•Χª, Χ”Χ Χ”Χ’Χª Χ”ΧΧ“Χ™Χ Χ”, ΧΧ§ΧΧ•ΧΧΧ™Χ” Χ•ΧΧ–Χ¨Χ—Χ•Χª"
+                               };
 
             _context.Forums.AddRange(new List<Forum> {scoops, politics});
             _context.SaveChanges();
@@ -98,8 +94,10 @@ namespace Entities
         {
             var firstUser = _context.Users.First();
             var secondUser = _context.Users.Skip(1).First();
-            var scoops = _context.Forums.Single(x => x.Name == "Scoops");
-            for (var i = 1; i <= 500; i++)
+            var var = "Χ΅Χ§Χ•Χ¤Χ™Χ";
+            var scoops = _context.Forums.Single(x => x.Name == var);
+
+            for (var i = 1; i <= 300; i++)
             {
                 var firstPost = new Post
                                     {

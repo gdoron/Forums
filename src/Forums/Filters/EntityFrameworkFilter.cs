@@ -12,24 +12,6 @@ namespace Forums.Filters
             _context = context;
         }
 
-        public override void OnResultExecuting(ResultExecutingContext context)
-        {
-            var x = 2;
-            base.OnResultExecuting(context);
-        }
-
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            var x = 2;
-            base.OnActionExecuting(context);
-        }
-
-        public override void OnResultExecuted(ResultExecutedContext context)
-        {
-            var x = 2;
-            base.OnResultExecuted(context);
-        }
-
         public override void OnActionExecuted(ActionExecutedContext context)
         {
             if (context.Exception != null)

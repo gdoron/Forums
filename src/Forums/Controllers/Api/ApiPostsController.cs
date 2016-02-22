@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Entities;
 using Forums.Filters;
+using Forums.Models;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
 
@@ -12,14 +15,16 @@ namespace Forums.Controllers.Api
 {
     [Produces("application/json")]
     [Route("api/Posts")]
-    [ServiceFilter(typeof(EntityFrameworkFilter))]
+    [ServiceFilter(typeof (EntityFrameworkFilter))]
     public class ApiPostsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ApiPostsController(ApplicationDbContext context)
+        public ApiPostsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: api/Posts
@@ -29,7 +34,7 @@ namespace Forums.Controllers.Api
             return _context.Posts
                 .Where(x => x.ForumId == forumId && x.ReplyToPostId == null)
                 .Skip(pageSize*page)
-                .Take(50)
+                .Take(pageSize)
                 .ToList();
         }
 
@@ -42,7 +47,7 @@ namespace Forums.Controllers.Api
                 return HttpBadRequest(ModelState);
             }
 
-            Post post = await _context.Posts.SingleAsync(m => m.Id == id);
+            var post = await _context.Posts.SingleAsync(m => m.Id == id);
 
             if (post == null)
             {
@@ -67,8 +72,7 @@ namespace Forums.Controllers.Api
             }
 
             _context.Entry(post).State = EntityState.Modified;
-            post.LastChangedDate = DateTime.Now;
-
+            post.IsModified = true;
             try
             {
                 await _context.SaveChangesAsync();
@@ -79,10 +83,51 @@ namespace Forums.Controllers.Api
                 {
                     return HttpNotFound();
                 }
-                else
+                throw;
+            }
+
+            return new HttpStatusCodeResult(StatusCodes.Status204NoContent);
+        }
+
+        // PUT: api/Posts/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Edit([FromRoute] int id, [FromBody] EditPostViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return HttpBadRequest(ModelState);
+            }
+
+            if (id != model.Id)
+            {
+                return HttpBadRequest();
+            }
+
+            var post = await _context.Posts.SingleOrDefaultAsync(x => x.Id == model.Id);
+            post.Body = model.Body;
+            post.Title = model.Title;
+            post.IsModified = true;
+
+            var changingUser = await GetCurrentUserAsync();
+            _context.PostRevisions.Add(new PostRevision
+                                           {
+                                               Post = post,
+                                               Title = model.Title,
+                                               Body = model.Body,
+                                               ChangingUser = changingUser,
+                                               CreationDate = DateTime.Now
+                                           });
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!PostExists(id))
                 {
-                    throw;
+                    return HttpNotFound();
                 }
+                throw;
             }
 
             return new HttpStatusCodeResult(StatusCodes.Status204NoContent);
@@ -97,7 +142,17 @@ namespace Forums.Controllers.Api
                 return HttpBadRequest(ModelState);
             }
 
+            var changingUser = await GetCurrentUserAsync();
             _context.Posts.Add(post);
+            _context.PostRevisions.Add(new PostRevision
+                                           {
+                                               Post = post,
+                                               Title = post.Title,
+                                               Body = post.Body,
+                                               ChangingUser = changingUser,
+                                               CreationDate = DateTime.Now
+                                           });
+
             try
             {
                 await _context.SaveChangesAsync();
@@ -108,13 +163,10 @@ namespace Forums.Controllers.Api
                 {
                     return new HttpStatusCodeResult(StatusCodes.Status409Conflict);
                 }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
-            return CreatedAtRoute("GetPost", new { id = post.Id }, post);
+            return CreatedAtRoute("GetPost", new {id = post.Id}, post);
         }
 
         // DELETE: api/Posts/5
@@ -126,13 +178,13 @@ namespace Forums.Controllers.Api
                 return HttpBadRequest(ModelState);
             }
 
-            Post post = await _context.Posts.SingleAsync(m => m.Id == id);
+            var post = await _context.Posts.SingleAsync(m => m.Id == id);
             if (post == null)
             {
                 return HttpNotFound();
             }
 
-            _context.Posts.Remove(post);
+            post.IsDeleted = true;
             await _context.SaveChangesAsync();
 
             return Ok(post);
@@ -141,6 +193,11 @@ namespace Forums.Controllers.Api
         private bool PostExists(int id)
         {
             return _context.Posts.Any(e => e.Id == id);
+        }
+
+        private async Task<ApplicationUser> GetCurrentUserAsync()
+        {
+            return await _userManager.FindByIdAsync(HttpContext.User.GetUserId());
         }
     }
 }

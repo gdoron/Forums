@@ -53,7 +53,7 @@ namespace Forums
                     //options.UseSqlServer(connection)
                     options.UseSqlServer(Configuration["ConnectionString"])
                         .CommandTimeout(30)
-                        .MaxBatchSize(300));
+                        .MaxBatchSize(1000));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()

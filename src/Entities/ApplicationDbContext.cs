@@ -20,6 +20,8 @@ namespace Entities
                 .ThenBy(x => x.PostId);
         }
 
+        public DbSet<PostRevision> PostRevisions { get; set; }
+
         //public IQueryable<HierarchyPost> A => HierarchyPosts.FromSql("select * from HierarchyPosts order by IsNull(ReplyToPostId,-1), isImportantReply desc, PostId");
 
         protected override void OnModelCreating(ModelBuilder builder)
