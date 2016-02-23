@@ -34,5 +34,12 @@ namespace Entities
         public virtual List<Post> Replies { get; set; }
 
         public PostType PostType { get; set; }
+
+        public bool IsLocked { get; set; }
+
+        public string LockingUserId { get; set; }
+        public ApplicationUser LockingUser { get; set; }
+        public string LockReason { get; set; }
+        public int VotesCount { get; set; }
     }
 }

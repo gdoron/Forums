@@ -22,14 +22,14 @@ namespace Entities
 
         public DbSet<PostRevision> PostRevisions { get; set; }
 
-        //public IQueryable<HierarchyPost> A => HierarchyPosts.FromSql("select * from HierarchyPosts order by IsNull(ReplyToPostId,-1), isImportantReply desc, PostId");
-
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
             this.UseDbSetNamesAsTableNames(builder);
 
             builder.Entity<HierarchyPost>().HasKey(x => x.PostId);
+            builder.Entity<Vote>().HasIndex(x => x.PostId);
+            builder.Entity<Vote>().Property(x=> x.CreationDate).ValueGeneratedOnAdd().HasDefaultValueSql("getdate()");
 
             var postBuilder = builder.Entity<Post>();
 
