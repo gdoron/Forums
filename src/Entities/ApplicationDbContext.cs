@@ -31,7 +31,7 @@ namespace Entities
 
             builder.Entity<HierarchyPost>().HasKey(x => x.PostId);
             builder.Entity<Vote>().HasIndex(x => x.PostId);
-            builder.Entity<Vote>().Property(x => x.CreationDate).ValueGeneratedOnAdd().HasDefaultValueSql("getdate()");
+            builder.Entity<Vote>().Property(x => x.CreationDate).ValueGeneratedOnAdd().HasDefaultValueSql("getutcdate()");
 
             var postBuilder = builder.Entity<Post>();
 
@@ -40,8 +40,7 @@ namespace Entities
                 //.HasColumnType("nvarchar(MAX)");
                 .IsRequired();
             postBuilder.HasOne(x => x.ReplyToPost).WithMany(x => x.Replies).OnDelete(DeleteBehavior.Restrict);
-            postBuilder.Property(x => x.PublishDate).ValueGeneratedOnAdd().HasDefaultValueSql("getdate()");
-            postBuilder.Property(x => x.LastChangedDate).ValueGeneratedOnAddOrUpdate();
+            postBuilder.Property(x => x.PublishDate).ValueGeneratedOnAdd().HasDefaultValueSql("getutcdate()");
             postBuilder.HasIndex(x => new {x.ForumId, x.PublishDate, x.LastChangedDate});
 
 

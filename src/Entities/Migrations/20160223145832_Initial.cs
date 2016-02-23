@@ -79,11 +79,15 @@ namespace Entities.Migrations
                                                                    ForumId = table.Column<int>(nullable: false),
                                                                    IsDeleted = table.Column<bool>(nullable: false),
                                                                    IsImportantReply = table.Column<bool>(nullable: false),
+                                                                   IsLocked = table.Column<bool>(nullable: false),
                                                                    IsModified = table.Column<bool>(nullable: false),
                                                                    LastChangedDate = table.Column<DateTime>(nullable: true),
+                                                                   LockReason = table.Column<string>(nullable: true),
+                                                                   LockingUserId = table.Column<string>(nullable: true),
                                                                    PostType = table.Column<int>(nullable: false),
-                                                                   PublishDate = table.Column<DateTime>(nullable: false, defaultValueSql: "getdate()"),
+                                                                   PublishDate = table.Column<DateTime>(nullable: false, defaultValueSql: "getutcdate()"),
                                                                    ReplyToPostId = table.Column<int>(nullable: true),
+                                                                   Score = table.Column<int>(nullable: false),
                                                                    Title = table.Column<string>(nullable: false),
                                                                    UserId = table.Column<string>(nullable: true)
                                                                },
@@ -92,6 +96,8 @@ namespace Entities.Migrations
                     table.PrimaryKey("PK_Post", x => x.Id);
                     table.ForeignKey("FK_Post_Forum_ForumId", x => x.ForumId, "Forums", "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey("FK_Post_ApplicationUser_LockingUserId", x => x.LockingUserId, "Users", "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey("FK_Post_Post_ReplyToPostId", x => x.ReplyToPostId, "Posts", "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey("FK_Post_ApplicationUser_UserId", x => x.UserId, "Users", "Id",
@@ -124,16 +130,16 @@ namespace Entities.Migrations
                     table.ForeignKey("FK_IdentityUserRole<string>_ApplicationUser_UserId", x => x.UserId, "Users", "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-            migrationBuilder.CreateTable("PostRevision", table => new
-                                                                      {
-                                                                          Id = table.Column<int>(nullable: false)
-                                                                              .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                                                                          Body = table.Column<string>(nullable: true),
-                                                                          ChangingUserId = table.Column<string>(nullable: true),
-                                                                          CreationDate = table.Column<DateTime>(nullable: false),
-                                                                          PostId = table.Column<int>(nullable: false),
-                                                                          Title = table.Column<string>(nullable: false)
-                                                                      },
+            migrationBuilder.CreateTable("PostRevisions", table => new
+                                                                       {
+                                                                           Id = table.Column<int>(nullable: false)
+                                                                               .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                                                                           Body = table.Column<string>(nullable: true),
+                                                                           ChangingUserId = table.Column<string>(nullable: true),
+                                                                           CreationDate = table.Column<DateTime>(nullable: false),
+                                                                           PostId = table.Column<int>(nullable: false),
+                                                                           Title = table.Column<string>(nullable: false)
+                                                                       },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PostRevision", x => x.Id);
@@ -141,6 +147,24 @@ namespace Entities.Migrations
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey("FK_PostRevision_Post_PostId", x => x.PostId, "Posts", "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+            migrationBuilder.CreateTable("Votes", table => new
+                                                               {
+                                                                   Id = table.Column<int>(nullable: false)
+                                                                       .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                                                                   CreationDate = table.Column<DateTime>(nullable: false, defaultValueSql: "getutcdate()"),
+                                                                   PostId = table.Column<int>(nullable: false),
+                                                                   UserId = table.Column<int>(nullable: false),
+                                                                   UserId1 = table.Column<string>(nullable: true),
+                                                                   VoteType = table.Column<int>(nullable: false)
+                                                               },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Vote", x => x.Id);
+                    table.ForeignKey("FK_Vote_Post_PostId", x => x.PostId, "Posts", "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey("FK_Vote_ApplicationUser_UserId1", x => x.UserId1, "Users", "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
 
@@ -179,6 +203,7 @@ namespace Entities.Migrations
             migrationBuilder.CreateIndex("EmailIndex", "Users", "NormalizedEmail");
             migrationBuilder.CreateIndex("UserNameIndex", "Users", "NormalizedUserName");
             migrationBuilder.CreateIndex("IX_Post_ForumId_PublishDate_LastChangedDate", "Posts", new[] {"ForumId", "PublishDate", "LastChangedDate"});
+            migrationBuilder.CreateIndex("IX_Vote_PostId", "Votes", "PostId");
             migrationBuilder.CreateIndex("RoleNameIndex", "Roles", "NormalizedName");
         }
 
@@ -186,7 +211,8 @@ namespace Entities.Migrations
         {
             migrationBuilder.Sql("DROP VIEW HierarchyPosts");
             migrationBuilder.Sql("DROP TRIGGER trigger_Posts_LastChangedDate");
-            migrationBuilder.DropTable("PostRevision");
+            migrationBuilder.DropTable("PostRevisions");
+            migrationBuilder.DropTable("Votes");
             migrationBuilder.DropTable("RoleClaims");
             migrationBuilder.DropTable("UserClaims");
             migrationBuilder.DropTable("UserLogins");

@@ -131,8 +131,7 @@ namespace Entities.Migrations
 
                     b.Property<bool>("IsModified");
 
-                    b.Property<DateTime?>("LastChangedDate")
-                        .ValueGeneratedOnAddOrUpdate();
+                    b.Property<DateTime?>("LastChangedDate");
 
                     b.Property<string>("LockReason");
 
@@ -142,7 +141,7 @@ namespace Entities.Migrations
 
                     b.Property<DateTime>("PublishDate")
                         .ValueGeneratedOnAdd()
-                        .HasAnnotation("Relational:GeneratedValueSql", "getdate()");
+                        .HasAnnotation("Relational:GeneratedValueSql", "getutcdate()");
 
                     b.Property<int?>("ReplyToPostId");
 
@@ -189,7 +188,7 @@ namespace Entities.Migrations
 
                     b.Property<DateTime>("CreationDate")
                         .ValueGeneratedOnAdd()
-                        .HasAnnotation("Relational:GeneratedValueSql", "getdate()");
+                        .HasAnnotation("Relational:GeneratedValueSql", "getutcdate()");
 
                     b.Property<int>("PostId");
 

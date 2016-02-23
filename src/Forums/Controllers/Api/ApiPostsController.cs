@@ -115,7 +115,7 @@ namespace Forums.Controllers.Api
                                                Title = model.Title,
                                                Body = model.Body,
                                                ChangingUser = changingUser,
-                                               CreationDate = DateTime.Now
+                                               CreationDate = DateTime.UtcNow
                                            });
             try
             {
@@ -150,7 +150,7 @@ namespace Forums.Controllers.Api
                                                Title = post.Title,
                                                Body = post.Body,
                                                ChangingUser = changingUser,
-                                               CreationDate = DateTime.Now
+                                               CreationDate = DateTime.UtcNow
                                            });
 
             try

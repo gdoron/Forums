@@ -156,7 +156,8 @@ namespace Entities
                                          IsLocked = true,
                                          LockingUser = firstUser,
                                          LockReason = "Becuase I hate you, go kill yourself",
-                                         Score = 5
+                                         Score = 4,
+                                         Votes = new List<Vote>()
                                      };
 
                 for (var j = 0; j < 5; j++)
@@ -168,6 +169,13 @@ namespace Entities
                                                  VoteType = VoteType.Up
                                              });
                 }
+
+                closedPost.Votes.Add(new Vote
+                                         {
+                                             Post = closedPost,
+                                             User = firstUser,
+                                             VoteType = VoteType.Down
+                                         });
 
                 _context.Posts.AddRange(firstPost, reply1, reply2, reply3, reply4, replytoReply2, closedPost);
             }
