@@ -40,7 +40,6 @@ namespace Entities
         {
             var scoops = new Forum
                              {
-
                                  Name = "סקופים",
                                  Description = @"מידע חדשותי חם ובזמן אמת המובא על ידי הגולשים. חלקם עיתונאי רוטר.נט, המחוברים בזימוניות למוקדי חדשות."
                              };
@@ -148,7 +147,29 @@ namespace Entities
                                      User = secondUser,
                                      ReplyToPost = reply2
                                  };
-                _context.Posts.AddRange(firstPost, reply1, reply2, reply3, reply4, replytoReply2);
+
+                var closedPost = new Post
+                                     {
+                                         Forum = scoops,
+                                         Title = "Closed post " + i,
+                                         User = secondUser,
+                                         IsLocked = true,
+                                         LockingUser = firstUser,
+                                         LockReason = "Becuase I hate you, go kill yourself",
+                                         Score = 5
+                                     };
+
+                for (var j = 0; j < 5; j++)
+                {
+                    closedPost.Votes.Add(new Vote
+                                             {
+                                                 Post = closedPost,
+                                                 User = firstUser,
+                                                 VoteType = VoteType.Up
+                                             });
+                }
+
+                _context.Posts.AddRange(firstPost, reply1, reply2, reply3, reply4, replytoReply2, closedPost);
             }
         }
     }

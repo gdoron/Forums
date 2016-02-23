@@ -40,6 +40,8 @@ namespace Entities
         public string LockingUserId { get; set; }
         public ApplicationUser LockingUser { get; set; }
         public string LockReason { get; set; }
-        public int VotesCount { get; set; }
+        public int Score { get; set; }
+
+        public List<Vote> Votes { get; set; }
     }
 }
