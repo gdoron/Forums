@@ -1,7 +1,9 @@
 ﻿using System.Threading.Tasks;
+using AutoMapper;
 using Entities;
 using Forums.Filters;
 using Forums.log4net;
+using Forums.Models;
 using Forums.Services;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
@@ -71,6 +73,15 @@ namespace Forums
             services.AddTransient<DbSeeder>();
 
             services.Configure<AuthMessageSenderOptions>(Configuration);
+
+
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Post, PostListViewModel>()
+                    .ForMember(d => d.UserName, options => options.MapFrom(x => x.User.UserName));
+            });
+            services.AddInstance(config);
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

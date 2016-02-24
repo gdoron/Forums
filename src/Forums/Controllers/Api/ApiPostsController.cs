@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Entities;
 using Forums.Filters;
 using Forums.Models;
@@ -20,22 +22,29 @@ namespace Forums.Controllers.Api
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly MapperConfiguration _mapperConfiguration;
 
-        public ApiPostsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public ApiPostsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, MapperConfiguration mapperConfiguration)
         {
             _context = context;
             _userManager = userManager;
+            _mapperConfiguration = mapperConfiguration;
         }
 
         // GET: api/Posts
         [HttpGet]
-        public IEnumerable<Post> GetPosts(int forumId, int pageSize = 50, int page = 0)
+        public async Task<IActionResult> GetPosts(int forumId, int pageSize = 50, int page = 0)
         {
-            return _context.Posts
+            var results = await _context.Posts.Include(x=> x.User)
                 .Where(x => x.ForumId == forumId && x.ReplyToPostId == null)
                 .Skip(pageSize*page)
                 .Take(pageSize)
-                .ToList();
+                //.ProjectTo<PostListViewModel>(_mapperConfiguration)
+                .ToListAsync();
+
+            var models = _mapperConfiguration.CreateMapper().Map<List<Post>, List<PostListViewModel>>(results);
+
+            return Ok(models);
         }
 
         // GET: api/Posts/5
