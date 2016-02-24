@@ -62,8 +62,8 @@ namespace Forums
                 .AddDefaultTokenProviders();
 
             services.AddMvc().AddJsonOptions(options => {
-                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-                options.SerializerSettings.DefaultValueHandling = DefaultValueHandling.Ignore;
+                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                options.SerializerSettings.DefaultValueHandling = DefaultValueHandling.Include;
             });
 
             // Add application services.
