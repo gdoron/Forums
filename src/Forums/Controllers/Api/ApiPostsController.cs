@@ -35,16 +35,17 @@ namespace Forums.Controllers.Api
         [HttpGet]
         public async Task<IActionResult> GetPosts(int forumId, int pageSize = 50, int page = 0)
         {
-            var results = await _context.Posts.Include(x=> x.User)
+            var results = await _context.Posts.Include(x => x.User)
                 .Where(x => x.ForumId == forumId && x.ReplyToPostId == null)
                 .Skip(pageSize*page)
                 .Take(pageSize)
-                //.ProjectTo<PostListViewModel>(_mapperConfiguration)
+                .Select(x => new
+                                 {
+                                     x.User.UserName
+                                 })
                 .ToListAsync();
 
-            var models = _mapperConfiguration.CreateMapper().Map<List<Post>, List<PostListViewModel>>(results);
-
-            return Ok(models);
+            return Ok(results);
         }
 
         // GET: api/Posts/5
