@@ -5,7 +5,10 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using CommonMark;
+using CommonMark.Syntax;
 using Entities;
+using Forums.Extensions;
 using Forums.Filters;
 using Forums.Models;
 using Microsoft.AspNet.Http;
@@ -150,6 +153,8 @@ namespace Forums.Controllers.Api
             {
                 return HttpBadRequest(ModelState);
             }
+
+            post.Body = post.Body.ParseMarkdown();
 
             var changingUser = await GetCurrentUserAsync();
             _context.Posts.Add(post);

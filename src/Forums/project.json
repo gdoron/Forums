@@ -29,7 +29,8 @@
     "Microsoft.AspNet.Authentication.Google": "1.0.0-rc1-final",
     "Sendgrid": "6.3.4",
     "Microsoft.AspNet.Identity": "3.0.0-rc1-final",
-    "AutoMapper": "4.2.0"
+    "AutoMapper": "4.2.0",
+    "CommonMark.NET": "0.11.0"
   },
 
   "commands": {
