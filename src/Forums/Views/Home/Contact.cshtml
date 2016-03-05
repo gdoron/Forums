@@ -1,22 +1,73 @@
-﻿@model object
+﻿@model Forums.ViewModels.Home.ContactViewModel
 
 @{
     ViewData["Title"] = "CommonMark & Anti XSS Demo";
 }
 <h2>@ViewData["Title"].</h2>
 
+<script>
+    function xss() {
+        document.getElementById('str').value = "<scr" + "ipt>alert('xss')<\/script><div onload=\"alert('xss')\" style=\"background-color: test\">Test<img src=\"test.gif\" style=\"background-image: url(javascript:alert('xss')); margin: 10px\"></div>";
+    }
+
+    function layout() {
+        document.getElementById('str').value = "</div></div> <span>Doron was here</span> <div> Valid </div>";
+    }
+
+    function commonMark() {
+        document.getElementById('str').value =
+"Heading\n\
+=======\n\
+\n\
+Sub-heading\n\
+-----------\n\
+ \n\
+### Another deeper heading\n\
+ \n\
+Paragraphs are separated\n\
+by a blank line.\n\
+\n\
+Two spaces at the end of a line leave a  \n\
+line break.\n\
+\n\
+Text attributes _italic_, \n\
+**bold**, `monospace`.\n\
+\n\
+Bullet list:\n\
+\n\
+  * apples\n\
+  * oranges\n\
+  * pears\n\
+\n\
+Numbered list:\n\
+\n\
+  1. apples\n\
+  2. oranges\n\
+  3. pears\n\
+\n\
+A [link](http://example.com).";
+    }
+</script>
+
 <form method="post" class="form-horizontal" role="form">
     <div class="row">
         <div class="col-xs-4">
-            <textarea name="str" width="100%" rows="15" >@Model</textarea>
+            <h3>Original text</h3>
+            <textarea id="str" name="str" style="width: 100%" rows="30" asp-for="OriginalStr"></textarea>
         </div>
         <div class="col-xs-4">
-            @Model
+            <h3>Generated HTML</h3>
+            @Model.Str
         </div>
         <div class="col-xs-4">
-            @Html.Raw(Model)
+            <h3>Rendered Ouput</h3>
+            @Html.Raw(Model.Str)
         </div>
     </div>
-
-    <input type="submit" class="btn btn-primary"/>
+    <div style="margin-top: 20px;">
+        <input type="submit" class="btn btn-primary"/>
+        <input class="btn btn-danger" style="margin-left: 50px;" type="submit" value="Put XSS" onclick="xss()"/>
+        <input class="btn btn-warning" style="margin-left: 50px;" type="submit" value="Put breaking layout" onclick="layout()"/>
+        <input class="btn btn-info" style="margin-left: 50px;" type="submit" value="Put Common Mark" onclick="commonMark()"/>
+    </div>
 </form>

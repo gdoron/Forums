@@ -2,6 +2,7 @@
 using Entities;
 using Forums.Extensions;
 using Forums.Filters;
+using Forums.ViewModels.Home;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -39,15 +40,25 @@ namespace Forums.Controllers
 
         public IActionResult Contact()
         {
-            ViewData["Message"] = @"Meie take a look Your page.....1232.";
-            return View();
+            var str = @"<script>alert('xss')</script><div onload=""alert('xss')"""
+    + @"style=""background-color: test"">Test<img src=""https://lh5.googleusercontent.com/-drrRi1dWOQQ/AAAAAAAAAAI/AAAAAAAAAAA/AMW9IgcL7q_lfB00a-OlXFlFZeUYTGjqSg/s96-c-mo/photo.jpg"""
+    + @"style=""background-image: url(javascript:alert('xss')); margin: 10px""></div>";
+            var model = new ContactViewModel
+                            {
+                                OriginalStr = str,
+                                Str = str.ParseMarkdown()
+                            };
+            ViewData["Message"] = @"CommonMark and Anti XSS Demo";
+            return View(model);
         }
         [HttpPost]
-        public IActionResult Contact(string str)
+        public IActionResult Contact(ContactViewModel model)
         {
-            var parsed = (object)str.ParseMarkdown();
+            model.OriginalStr = model.Str;
+            model.Str = model.Str.ParseMarkdown();
             Response.Headers.Add("X-XSS-Protection", "0");
-            return View(parsed);
+
+            return View(model);
         }
 
         public IActionResult Error()
