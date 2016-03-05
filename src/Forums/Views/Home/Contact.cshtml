@@ -16,7 +16,7 @@
 
     function commonMark() {
         document.getElementById('str').value =
-"Heading\n\
+            "Heading\n\
 =======\n\
 \n\
 Sub-heading\n\
@@ -64,10 +64,18 @@ A [link](http://example.com).";
             @Html.Raw(Model.Str)
         </div>
     </div>
-    <div style="margin-top: 20px;">
-        <input type="submit" class="btn btn-primary"/>
-        <input class="btn btn-danger" style="margin-left: 50px;" type="submit" value="Put XSS" onclick="xss()"/>
-        <input class="btn btn-warning" style="margin-left: 50px;" type="submit" value="Put breaking layout" onclick="layout()"/>
-        <input class="btn btn-info" style="margin-left: 50px;" type="submit" value="Put Common Mark" onclick="commonMark()"/>
+    <div class="row">
+        <div class="col-xs-3">
+            <input type="submit" class="btn btn-primary"/>
+        </div>
+        <div class="col-xs-3">
+            <input class="btn btn-danger" type="submit" value="Put XSS" onclick="xss()"/>
+        </div>
+        <div class="col-xs-3">
+            <input class="btn btn-warning" type="submit" value="Put breaking layout" onclick="layout()"/>
+        </div>
+        <div class="col-xs-3">
+            <input class="btn btn-info" type="submit" value="Put Common Mark" onclick="commonMark()"/>
+        </div>
     </div>
 </form>
