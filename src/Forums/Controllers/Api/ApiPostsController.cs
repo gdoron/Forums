@@ -116,8 +116,8 @@ namespace Forums.Controllers.Api
             }
 
             var post = await _context.Posts.SingleOrDefaultAsync(x => x.Id == model.Id);
-            post.Body = model.Body;
-            post.Title = model.Title;
+            post.Body = model.Body.ParseMarkdown();
+            post.Title = model.Title.Sanitize();
             post.IsModified = true;
 
             var changingUser = await GetCurrentUserAsync();

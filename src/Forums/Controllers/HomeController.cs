@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Entities;
+using Forums.Extensions;
 using Forums.Filters;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.Logging;
@@ -38,10 +39,15 @@ namespace Forums.Controllers
 
         public IActionResult Contact()
         {
-            ViewData["Message"] = "Meie take a look Your page.....1232.";
-            var newUser = new ApplicationUser {UserName = "doron", Email = "grdoron@gmail.com"};
-            _context.Users.Add(newUser);
+            ViewData["Message"] = @"Meie take a look Your page.....1232.";
             return View();
+        }
+        [HttpPost]
+        public IActionResult Contact(string str)
+        {
+            var parsed = (object)str.ParseMarkdown();
+            Response.Headers.Add("X-XSS-Protection", "0");
+            return View(parsed);
         }
 
         public IActionResult Error()
