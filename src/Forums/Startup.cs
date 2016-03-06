@@ -84,6 +84,13 @@ namespace Forums
                 cfg.CreateMap<CreateUserReviewModel, UserReview>().ReverseMap();
                 cfg.CreateMap<UserReview, UserReviewListModel>()
                     .ForMember(d => d.FromUserName, options => options.MapFrom(s => s.FromUser.UserName));
+
+                cfg.CreateMap<Message, IncomingMessageModel>()
+                    .ForMember(d => d.SenderUserName, options => options.MapFrom(s => s.Sender.UserName));
+
+                cfg.CreateMap<Message, OutgoingMessageModel>()
+                    .ForMember(d => d.RecipientUserName, options => options.MapFrom(s => s.Recipient.UserName));
+
             });
             services.AddInstance(config);
 

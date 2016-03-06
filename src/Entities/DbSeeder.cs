@@ -40,6 +40,11 @@ namespace Entities
                 InitUserReviews();
             }
 
+            if (!_context.Messages.Any())
+            {
+                InitMessages();
+            }
+
             _context.SaveChanges();
         }
 
@@ -207,6 +212,39 @@ namespace Entities
                                          VoteType = goodReview ? VoteType.Down : VoteType.Up
                                      };
                     user.ReviewsReceived.Add(review);
+                }
+            }
+        }
+
+
+        private void InitMessages()
+        {
+            var random = new Random();
+            var users = _context.Users.ToList();
+            foreach (var user in users)
+            {
+                var otherUsers = users.Where(x => x.Id != user.Id).ToList();
+
+                foreach (var otherUser in otherUsers)
+                {
+                    for (var i = 0; i < 50; i++)
+                    {
+                        var isRead = random.Next()%2 == 0;
+                        var isRecipientDeketed = random.Next()%2 == 0;
+                        var isSenderDeleted = random.Next()%2 == 0;
+
+                        var message = new Message
+                                          {
+                                              Recipient = otherUser,
+                                              Sender = user,
+                                              Title = $"Private message {i}",
+                                              Body = $"Private message body {i}",
+                                              IsRead = isRead,
+                                              IsRecipientDeleted = isRecipientDeketed,
+                                              IsSenderDeleted = isSenderDeleted
+                                          };
+                        _context.Messages.Add(message);
+                    }
                 }
             }
         }

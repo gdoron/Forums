@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Entities;
 using Forums.Models;
 using Microsoft.AspNet.Http;
@@ -20,7 +21,13 @@ namespace Forums.Controllers.Api
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly MapperConfiguration _mapperConfiguration;
-
+        private Lazy<IMapper> Mapper
+        {
+            get
+            {
+                return new Lazy<IMapper>(() => _mapperConfiguration.CreateMapper());
+            }
+        }
         public UserReviewsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, MapperConfiguration mapperConfiguration)
         {
             _context = context;
@@ -33,11 +40,13 @@ namespace Forums.Controllers.Api
         [Route("GetUserReviewsForUser")]
         public async Task<List<UserReviewListModel>> GetUserReviewsForUser([FromQuery] string userId)
         {
-            var reviews = await _context.UserReviews.Where(x => x.ToUserId == userId && !x.IsDeleted)
-                .Include(x => x.FromUser).ToListAsync();
-            var models = _mapperConfiguration.CreateMapper().Map<List<UserReview>, List<UserReviewListModel>>(reviews);
+            var reviews = await _context.UserReviews
+                .Include(x => x.FromUser)
+                .Where(x => x.ToUserId == userId && !x.IsDeleted)
+                .ProjectTo<UserReviewListModel>(_mapperConfiguration)
+                .ToListAsync();
 
-            return models;
+            return reviews;
         }
 
         // GET: api/UserReviews/5
@@ -49,7 +58,9 @@ namespace Forums.Controllers.Api
                 return HttpBadRequest(ModelState);
             }
 
-            UserReview userReview = await _context.UserReviews.SingleAsync(m => m.Id == id);
+            UserReviewListModel userReview = await _context.UserReviews
+                .ProjectTo<UserReviewListModel>(_mapperConfiguration)
+                .SingleAsync(m => m.Id == id);
 
             if (userReview == null)
             {
@@ -109,7 +120,7 @@ namespace Forums.Controllers.Api
                 return HttpBadRequest(ModelState);
             }
 
-            var userReview = _mapperConfiguration.CreateMapper().Map<CreateUserReviewModel, UserReview>(model);
+            var userReview = Mapper.Value.Map<CreateUserReviewModel, UserReview>(model);
             //var currentUser = await GetCurrentUserAsync();
             userReview.FromUserId = HttpContext.User.GetUserId();
             _context.UserReviews.Add(userReview);

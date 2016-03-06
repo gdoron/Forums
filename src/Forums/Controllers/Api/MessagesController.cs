@@ -1,9 +1,11 @@
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Entities;
+using Forums.Models;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
@@ -20,6 +22,14 @@ namespace Forums.Controllers.Api
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly MapperConfiguration _mapperConfiguration;
+
+        private Lazy<IMapper> Mapper
+        {
+            get
+            {
+                return new Lazy<IMapper>(()=> _mapperConfiguration.CreateMapper());
+            }
+        }
 
         public MessagesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, MapperConfiguration mapperConfiguration)
         {
@@ -43,7 +53,14 @@ namespace Forums.Controllers.Api
                 if (!isAdmin)
                     return HttpUnauthorized();
             }
-            return Ok(_context.Messages.Where(x=> x.RecipientId == userId));
+
+            var messages = await _context.Messages.Include(x => x.Sender)
+                .Where(x => x.RecipientId == userId && !x.IsRecipientDeleted)
+                .OrderByDescending(x => x.SentDate)
+                .ProjectTo<IncomingMessageModel>(_mapperConfiguration)
+                .ToListAsync();
+
+            return Ok(messages);
         }
 
         // GET: api/Messages/IncomingMessages
@@ -61,11 +78,18 @@ namespace Forums.Controllers.Api
                 if (!isAdmin)
                     return HttpUnauthorized();
             }
-            return Ok(_context.Messages.Where(x => x.SenderId == userId));
+            var messages = await _context.Messages.Include(x => x.Sender)
+                .Where(x => x.SenderId == userId && !x.IsSenderDeleted)
+                .OrderByDescending(x => x.SentDate)
+                .ProjectTo<OutgoingMessageModel>(_mapperConfiguration)
+                .ToListAsync();
+
+            return Ok(messages);
         }
 
         // GET: api/Messages/5
         [HttpGet("{id}", Name = "GetMessage")]
+        [Authorize(Roles="Admin")]
         public async Task<IActionResult> GetMessage([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -85,6 +109,7 @@ namespace Forums.Controllers.Api
 
         // PUT: api/Messages/5
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutMessage([FromRoute] int id, [FromBody] Message message)
         {
             if (!ModelState.IsValid)
