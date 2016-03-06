@@ -35,6 +35,13 @@ namespace Entities
             var userBuilder = builder.Entity<ApplicationUser>();
             userBuilder.HasMany(x => x.ReviewsGiven).WithOne(x => x.FromUser).IsRequired().OnDelete(DeleteBehavior.Restrict);
             userBuilder.HasMany(x => x.ReviewsReceived).WithOne(x => x.ToUser).IsRequired().OnDelete(DeleteBehavior.Restrict);
+            userBuilder.HasMany(x => x.IncomingMessages).WithOne(x => x.Recipient).IsRequired().OnDelete(DeleteBehavior.Restrict);
+            userBuilder.HasMany(x => x.OutgoingMessages).WithOne(x => x.Sender).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            var messageBuilder = builder.Entity<Message>();
+            messageBuilder.HasIndex(x => new {x.IsSenderDeleted, x.SenderId});
+            messageBuilder.HasIndex(x => new {x.IsRecipientDeleted, x.RecipientId});
+
 
             var userReviewBuilder = builder.Entity<UserReview>();
             userReviewBuilder.HasIndex(x => new
@@ -63,6 +70,8 @@ namespace Entities
 
             var postRevisionBuilder = builder.Entity<PostRevision>();
             postRevisionBuilder.Property(x => x.Title).IsRequired();
+
+
         }
     }
 }
