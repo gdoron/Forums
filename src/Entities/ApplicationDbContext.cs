@@ -15,6 +15,8 @@ namespace Entities
 
         public DbSet<PostRevision> PostRevisions { get; set; }
 
+        public DbSet<UserReview> UserReviews { get; set; }
+
         public IQueryable<HierarchyPost> GeHierarchyPost(int rootId)
         {
             return HierarchyPosts
@@ -28,6 +30,21 @@ namespace Entities
         {
             base.OnModelCreating(builder);
             this.UseDbSetNamesAsTableNames(builder);
+
+
+            var userBuilder = builder.Entity<ApplicationUser>();
+            userBuilder.HasMany(x => x.ReviewsGiven).WithOne(x => x.FromUser).IsRequired().OnDelete(DeleteBehavior.Restrict);
+            userBuilder.HasMany(x => x.ReviewsReceived).WithOne(x => x.ToUser).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            var userReviewBuilder = builder.Entity<UserReview>();
+            userReviewBuilder.HasIndex(x => new
+                                                {
+                                                    x.FromUserId,
+                                                    x.ToUserId
+                                                }).IsUnique();
+
+            userReviewBuilder.Property(x => x.CreationDate).ValueGeneratedOnAdd().HasDefaultValueSql("getutcdate()");
+            userReviewBuilder.Property(x => x.UpdateDate).ValueGeneratedOnAdd().HasDefaultValueSql("getutcdate()");
 
             builder.Entity<HierarchyPost>().HasKey(x => x.PostId);
             builder.Entity<Vote>().HasIndex(x => x.PostId);

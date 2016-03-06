@@ -9,7 +9,7 @@ namespace Forums.Controllers.Api
     [Produces("application/json")]
     public class HierarchyPostsController : Controller
     {
-        private ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
         public HierarchyPostsController(ApplicationDbContext context)
         {

@@ -8,9 +8,10 @@ using Entities;
 namespace Entities.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20160305224404_UserReviewsAddition")]
+    partial class UserReviewsAddition
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "7.0.0-rc1-16348")
@@ -96,10 +97,6 @@ namespace Entities.Migrations
                     b.Property<bool>("IsModified");
 
                     b.Property<DateTime?>("LastChangedDate");
-
-                    b.Property<int>("NegativeReviewsScore");
-
-                    b.Property<int>("PositiveReviewsScore");
 
                     b.Property<DateTime>("PublishDate");
 
@@ -197,16 +194,10 @@ namespace Entities.Migrations
                     b.Property<string>("FromUserId")
                         .IsRequired();
 
-                    b.Property<bool>("IsDeleted");
-
                     b.Property<string>("Review");
 
                     b.Property<string>("ToUserId")
                         .IsRequired();
-
-                    b.Property<DateTime>("UpdateDate")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("Relational:GeneratedValueSql", "getutcdate()");
 
                     b.Property<int>("VoteType");
 

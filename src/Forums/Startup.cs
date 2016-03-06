@@ -79,6 +79,11 @@ namespace Forums
             {
                 cfg.CreateMap<Post, PostListViewModel>()
                     .ForMember(d => d.UserName, options => options.MapFrom(x => x.User.UserName));
+
+                cfg.CreateMap<HierarchyPost, HierarchyPostModel>();
+                cfg.CreateMap<CreateUserReviewModel, UserReview>().ReverseMap();
+                cfg.CreateMap<UserReview, UserReviewListModel>()
+                    .ForMember(d => d.FromUserName, options => options.MapFrom(s => s.FromUser.UserName));
             });
             services.AddInstance(config);
 

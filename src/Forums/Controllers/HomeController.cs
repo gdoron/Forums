@@ -4,6 +4,7 @@ using Forums.Extensions;
 using Forums.Filters;
 using Forums.ViewModels.Home;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Data.Entity;
 using Microsoft.Extensions.Logging;
 
 namespace Forums.Controllers
@@ -27,21 +28,17 @@ namespace Forums.Controllers
 
         public IActionResult About()
         {
+
             ViewData["Message"] = "Your application TEST page.";
 
 
-            //var hierarchyPosts = _context.HierarchyPosts.ToList();
-            var p = _context.Posts.SingleOrDefault(x => x.Id == 1);
-            var p1 = _context.Posts.SingleOrDefault(x => x.Id == 0);
-            var p2 = _context.Posts.ToList();
-            
             return View();
         }
 
         public IActionResult Contact()
         {
             var str = @"<script>alert('xss')</script><div onload=""alert('xss')"""
-    + @"style=""background-color: test"">Test<img src=""https://lh5.googleusercontent.com/-drrRi1dWOQQ/AAAAAAAAAAI/AAAAAAAAAAA/AMW9IgcL7q_lfB00a-OlXFlFZeUYTGjqSg/s96-c-mo/photo.jpg"""
+    + @"style=""background-color: aqua"">Test<img src=""https://lh5.googleusercontent.com/-drrRi1dWOQQ/AAAAAAAAAAI/AAAAAAAAAAA/AMW9IgcL7q_lfB00a-OlXFlFZeUYTGjqSg/s96-c-mo/photo.jpg"""
     + @"style=""background-image: url(javascript:alert('xss')); margin: 10px""></div>";
             var model = new ContactViewModel
                             {

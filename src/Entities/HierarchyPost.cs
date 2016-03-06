@@ -18,5 +18,7 @@ namespace Entities
         public bool IsDeleted { get; set; }
         public bool IsModified { get; set; }
         public bool IsImportantReply { get; set; }
+        public int PositiveReviewsScore { get; set; }
+        public int NegativeReviewsScore { get; set; }
     }
 }

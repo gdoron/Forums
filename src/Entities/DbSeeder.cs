@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,6 +34,12 @@ namespace Entities
             {
                 InitPosts();
             }
+
+            if (!_context.UserReviews.Any())
+            {
+                InitUserReviews();
+            }
+
             _context.SaveChanges();
         }
 
@@ -178,6 +185,29 @@ namespace Entities
                                          });
 
                 _context.Posts.AddRange(firstPost, reply1, reply2, reply3, reply4, replytoReply2, closedPost);
+            }
+        }
+
+        private void InitUserReviews()
+        {
+            var random = new Random();
+            var users = _context.Users.ToList();
+            foreach (var user in users)
+            {
+                var otherUsers = users.Where(x => x.Id != user.Id).ToList();
+                var goodReview = random.Next()%2 == 0;
+
+                foreach (var otherUser in otherUsers)
+                {
+                    var review = new UserReview
+                                     {
+                                         FromUser = otherUser,
+                                         ToUser = user,
+                                         Review = goodReview ? "Crappy user" : "Best user ever!",
+                                         VoteType = goodReview ? VoteType.Down : VoteType.Up
+                                     };
+                    user.ReviewsReceived.Add(review);
+                }
             }
         }
     }
