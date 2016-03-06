@@ -16,6 +16,7 @@ namespace Entities
         public DbSet<PostRevision> PostRevisions { get; set; }
 
         public DbSet<UserReview> UserReviews { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         public IQueryable<HierarchyPost> GeHierarchyPost(int rootId)
         {
@@ -39,9 +40,11 @@ namespace Entities
             userBuilder.HasMany(x => x.OutgoingMessages).WithOne(x => x.Sender).IsRequired().OnDelete(DeleteBehavior.Restrict);
 
             var messageBuilder = builder.Entity<Message>();
+            messageBuilder.Property(x => x.SentDate).ValueGeneratedOnAdd().HasDefaultValueSql("getutcdate()");
+            messageBuilder.Property(x => x.Title).HasMaxLength(200);
+            messageBuilder.Property(x => x.Body).HasMaxLength(1000);
             messageBuilder.HasIndex(x => new {x.IsSenderDeleted, x.SenderId});
             messageBuilder.HasIndex(x => new {x.IsRecipientDeleted, x.RecipientId});
-
 
             var userReviewBuilder = builder.Entity<UserReview>();
             userReviewBuilder.HasIndex(x => new
@@ -59,7 +62,7 @@ namespace Entities
 
             var postBuilder = builder.Entity<Post>();
 
-            postBuilder.Property(x => x.Title).HasMaxLength(200)
+            postBuilder.Property(x => x.Title).HasMaxLength(400)
                 // the default for string
                 //.HasColumnType("nvarchar(MAX)");
                 .IsRequired();

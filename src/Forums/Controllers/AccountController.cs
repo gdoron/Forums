@@ -12,7 +12,6 @@ using Forums.ViewModels.Account;
 
 namespace Forums.Controllers
 {
-    [Authorize]
     public class AccountController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;

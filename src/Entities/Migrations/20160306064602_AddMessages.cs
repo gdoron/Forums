@@ -10,7 +10,7 @@ namespace Entities.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Message",
+                name: "Messages",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -21,6 +21,7 @@ namespace Entities.Migrations
                     IsSenderDeleted = table.Column<bool>(nullable: false),
                     RecipientId = table.Column<string>(nullable: false),
                     SenderId = table.Column<string>(nullable: false),
+                    SentDate = table.Column<DateTime>(nullable: false, defaultValueSql: "getutcdate()"),
                     Title = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -41,17 +42,17 @@ namespace Entities.Migrations
                 });
             migrationBuilder.CreateIndex(
                 name: "IX_Message_IsRecipientDeleted_RecipientId",
-                table: "Message",
+                table: "Messages",
                 columns: new[] { "IsRecipientDeleted", "RecipientId" });
             migrationBuilder.CreateIndex(
                 name: "IX_Message_IsSenderDeleted_SenderId",
-                table: "Message",
+                table: "Messages",
                 columns: new[] { "IsSenderDeleted", "SenderId" });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable("Message");
+            migrationBuilder.DropTable("Messages");
         }
     }
 }

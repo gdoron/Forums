@@ -1,4 +1,6 @@
-﻿namespace Entities
+﻿using System;
+
+namespace Entities
 {
     public class Message
     {
@@ -6,6 +8,7 @@
         public string Title { get; set; }
         public string Body { get; set; }
         public bool IsRead { get; set; }
+        public DateTime SentDate { get; set; }
         public bool IsRecipientDeleted { get; set; } 
         public bool IsSenderDeleted { get; set; }
 

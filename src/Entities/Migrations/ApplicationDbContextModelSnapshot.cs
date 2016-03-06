@@ -123,7 +123,8 @@ namespace Entities.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Body");
+                    b.Property<string>("Body")
+                        .HasAnnotation("MaxLength", 1000);
 
                     b.Property<bool>("IsRead");
 
@@ -137,13 +138,20 @@ namespace Entities.Migrations
                     b.Property<string>("SenderId")
                         .IsRequired();
 
-                    b.Property<string>("Title");
+                    b.Property<DateTime>("SentDate")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("Relational:GeneratedValueSql", "getutcdate()");
+
+                    b.Property<string>("Title")
+                        .HasAnnotation("MaxLength", 200);
 
                     b.HasKey("Id");
 
                     b.HasIndex("IsRecipientDeleted", "RecipientId");
 
                     b.HasIndex("IsSenderDeleted", "SenderId");
+
+                    b.HasAnnotation("Relational:TableName", "Messages");
                 });
 
             modelBuilder.Entity("Entities.Post", b =>
@@ -181,7 +189,7 @@ namespace Entities.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasAnnotation("MaxLength", 200);
+                        .HasAnnotation("MaxLength", 400);
 
                     b.Property<string>("UserId");
 
