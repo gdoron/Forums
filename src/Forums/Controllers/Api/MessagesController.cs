@@ -11,6 +11,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
+using StackExchange.Redis;
 
 namespace Forums.Controllers.Api
 {
@@ -22,6 +23,7 @@ namespace Forums.Controllers.Api
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly MapperConfiguration _mapperConfiguration;
+        private readonly ConnectionMultiplexer _redis;
 
         private Lazy<IMapper> Mapper
         {
@@ -31,11 +33,12 @@ namespace Forums.Controllers.Api
             }
         }
 
-        public MessagesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, MapperConfiguration mapperConfiguration)
+        public MessagesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, MapperConfiguration mapperConfiguration, ConnectionMultiplexer redis)
         {
             _context = context;
             _userManager = userManager;
             _mapperConfiguration = mapperConfiguration;
+            _redis = redis;
         }
 
         // GET: api/Messages/IncomingMessages
@@ -151,11 +154,13 @@ namespace Forums.Controllers.Api
             {
                 return HttpBadRequest(ModelState);
             }
-
+            var currentUser = await GetCurrentUserAsync();
+            message.SenderId = currentUser.Id;
             _context.Messages.Add(message);
             try
             {
                 await _context.SaveChangesAsync();
+                _redis.GetSubscriber().Publish($"message:{message.RecipientId}", $"New incoming message from {currentUser.UserName}");
             }
             catch (DbUpdateException)
             {

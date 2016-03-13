@@ -25,14 +25,16 @@ namespace Forums.Controllers.Api
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly MapperConfiguration _mapperConfiguration;
         private readonly IMemoryCache _memoryCache;
+        private readonly PostsCacher _postsCacher;
 
         public ApiPostsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, MapperConfiguration mapperConfiguration
-            ,IMemoryCache memoryCache)
+            ,IMemoryCache memoryCache, PostsCacher postsCacher)
         {
             _context = context;
             _userManager = userManager;
             _mapperConfiguration = mapperConfiguration;
             _memoryCache = memoryCache;
+            _postsCacher = postsCacher;
         }
 
         // GET: api/Posts
@@ -96,6 +98,7 @@ namespace Forums.Controllers.Api
             try
             {
                 await _context.SaveChangesAsync();
+                await _postsCacher.UpdateCacheAfterPostChange(post.Id);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -140,6 +143,7 @@ namespace Forums.Controllers.Api
             try
             {
                 await _context.SaveChangesAsync();
+                await _postsCacher.UpdateCacheAfterPostChange(model.Id);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -163,6 +167,7 @@ namespace Forums.Controllers.Api
             }
 
             post.Body = post.Body.ParseMarkdown();
+            post.Title = post.Title.Sanitize();
 
             var changingUser = await GetCurrentUserAsync();
             _context.Posts.Add(post);
@@ -178,6 +183,7 @@ namespace Forums.Controllers.Api
             try
             {
                 await _context.SaveChangesAsync();
+                await _postsCacher.UpdateCacheAfterPostChange(post.Id);
             }
             catch (DbUpdateException)
             {
@@ -208,6 +214,7 @@ namespace Forums.Controllers.Api
 
             post.IsDeleted = true;
             await _context.SaveChangesAsync();
+            await _postsCacher.UpdateCacheAfterPostChange(post.Id);
 
             return Ok(post);
         }

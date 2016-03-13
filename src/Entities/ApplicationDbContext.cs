@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
@@ -29,7 +27,7 @@ namespace Entities
                 .ThenBy(x => x.PostId);
         }
 
-        public Task<List<HierarchyPost>> GetRootAsync(int postId)
+        public IQueryable<HierarchyPost> GeHierarchyPostBySon(int postId)
         {
             return HierarchyPosts.FromSql(@"
 with postsCTE as (
@@ -47,8 +45,7 @@ select * from HierarchyPosts where RootId =(
                                             where ReplyToPostId is null)", postId)
                 .OrderBy(x => x.ReplyToPostId ?? -1)
                 .ThenByDescending(x => x.IsImportantReply)
-                .ThenBy(x => x.PostId)
-                .ToListAsync();
+                .ThenBy(x => x.PostId);
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -97,8 +94,6 @@ select * from HierarchyPosts where RootId =(
 
             var postRevisionBuilder = builder.Entity<PostRevision>();
             postRevisionBuilder.Property(x => x.Title).IsRequired();
-
-
         }
     }
 }

@@ -1,11 +1,8 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Entities;
+﻿using Entities;
 using Forums.Extensions;
 using Forums.Filters;
 using Forums.ViewModels.Home;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
 using Microsoft.Extensions.Logging;
 
 namespace Forums.Controllers

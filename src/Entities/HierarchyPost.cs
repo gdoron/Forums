@@ -20,5 +20,6 @@ namespace Entities
         public bool IsImportantReply { get; set; }
         public int PositiveReviewsScore { get; set; }
         public int NegativeReviewsScore { get; set; }
+        public int Views { get; set; }
     }
 }

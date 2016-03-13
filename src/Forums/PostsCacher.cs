@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Entities;
@@ -36,24 +37,35 @@ namespace Forums
             return gzipPosts;
         }
 
-        private async Task<byte[]> UpdateHierarchyPostAsync(int postId)
+        private async Task<byte[]> UpdateHierarchyPostAsync(int rootId)
         {
-            if (!_context.Posts.Any(x => x.Id == postId))
+            if (!_context.Posts.Any(x => x.Id == rootId))
                 return null;
 
-            var hierarchyPosts = await _context.GetRootAsync(postId);
+            var hierarchyPosts = await _context.GeHierarchyPost(rootId).ToListAsync();
+            var gzippedPosts =  RefreshHierarchyPostCache(hierarchyPosts);
+
+            return gzippedPosts;
+        }
+
+        private byte[] RefreshHierarchyPostCache(List<HierarchyPost> hierarchyPosts)
+        {
             var serializedPosts = JsonConvert.SerializeObject(hierarchyPosts, new JsonSerializerSettings {DefaultValueHandling = DefaultValueHandling.Ignore});
             var gzippedPosts = Gzipper.Zip(serializedPosts);
-            
-            var key = hierarchyPosts.First().RootId.ToString();
+
+            var root = hierarchyPosts.First();
+            if (root.RootId != root.PostId)
+            {
+                throw new ArgumentException($"Can't refresh cache for Hierarchy post because the first post has value of RootId {root.RootId} and the PostId is {root.PostId}");
+            }
+
+            var key = root.RootId.ToString();
             var lastChangeTicks = DateTime.UtcNow.Ticks;
-            /*todo: fix this*/
-            var views = 999;
             var entries = new[]
                               {
                                   new HashEntry("Posts", gzippedPosts),
                                   new HashEntry("LastChangeTicks", lastChangeTicks),
-                                  new HashEntry("Views", views)
+                                  new HashEntry("Views", root.Views)
                               };
             _redis.GetDatabase().HashSet(key, entries, CommandFlags.FireAndForget);
 
@@ -61,7 +73,7 @@ namespace Forums
                 new PostMetadata
                     {
                         LastChangeTicks = lastChangeTicks,
-                        ViewsCount = views
+                        ViewsCount = root.Views
                     }, gzippedPosts);
 
             _memoryCache.Set(key, memoryKeyValue);
@@ -104,6 +116,12 @@ namespace Forums
                                    LastChangeTicks = long.Parse(redisValues[1])
                                };
             return metadata;
+        }
+
+        public async Task UpdateCacheAfterPostChange(int postId)
+        {
+            var hierarchyPosts = await _context.GeHierarchyPostBySon(postId).ToListAsync();
+            RefreshHierarchyPostCache(hierarchyPosts);
         }
 
         public class PostMetadata
