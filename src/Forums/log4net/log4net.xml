@@ -9,7 +9,7 @@
   </appender>
 
   <root>
-    <level value="Debug" />
+    <level value="Warning" />
     <appender-ref ref="RollingFile" />
   </root>
 </log4net>

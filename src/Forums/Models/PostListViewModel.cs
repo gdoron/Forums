@@ -15,5 +15,6 @@ namespace Forums.Models
         public bool IsLocked { get; set; }
         public DateTime PublishDate { get; set; }
         public int Score { get; set; }
+        public int Vie { get; set; }
     }
 }

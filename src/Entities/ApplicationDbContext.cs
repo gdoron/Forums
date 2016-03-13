@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
@@ -25,6 +27,27 @@ namespace Entities
                 .OrderBy(x => x.ReplyToPostId ?? -1)
                 .ThenByDescending(x => x.IsImportantReply)
                 .ThenBy(x => x.PostId);
+        }
+
+        public Task<List<HierarchyPost>> GetRootAsync(int postId)
+        {
+            return HierarchyPosts.FromSql(@"
+with postsCTE as (
+   select Id, ReplyToPostId
+   from Posts
+   where Id = @p0
+   union all
+   select Parent.Id, Parent.ReplyToPostId
+   from Posts Parent
+     join postsCTE Son on Son.ReplyToPostId = Parent.Id  -- this is the recursion
+) 
+select * from HierarchyPosts where RootId =(
+                                            select top 1 Id
+                                            from PostsCTE
+                                            where ReplyToPostId is null)", postId)
+                .OrderBy(x => x.ReplyToPostId ?? -1)
+                .ThenByDescending(x => x.IsImportantReply)
+                .ThenBy(x => x.PostId).ToListAsync();
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

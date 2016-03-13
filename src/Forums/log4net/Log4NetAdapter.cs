@@ -24,8 +24,10 @@ namespace Forums.log4net
             {
                 case LogLevel.Verbose:
                 case LogLevel.Debug:
+                    return false;
                     return _logger.IsDebugEnabled;
                 case LogLevel.Information:
+                    return false;
                     return _logger.IsInfoEnabled;
                 case LogLevel.Warning:
                     return _logger.IsWarnEnabled;

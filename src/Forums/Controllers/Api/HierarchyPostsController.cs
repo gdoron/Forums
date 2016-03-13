@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using Entities;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
 
 namespace Forums.Controllers.Api
 {
@@ -10,15 +9,17 @@ namespace Forums.Controllers.Api
     public class HierarchyPostsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        //private readonly PostsCacher _postsCacher;
+        private readonly PostsCacher2 _postsCacher;
 
-        public HierarchyPostsController(ApplicationDbContext context)
+        public HierarchyPostsController(ApplicationDbContext context, PostsCacher2 postsCacher)
         {
             _context = context;
+            _postsCacher = postsCacher;
         }
 
         // GET: api/HierarchyPost/5
         [HttpGet("{id}", Name = "GetHierarchyPost")]
-
         public async Task<IActionResult> GetHierarchyPost([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -26,14 +27,17 @@ namespace Forums.Controllers.Api
                 return HttpBadRequest(ModelState);
             }
 
-            var posts = await _context.GeHierarchyPost(id).ToListAsync();
+            _postsCacher.IncreaseViewCountAsync(id);
+            var gzippedPosts = await _postsCacher.GetGzipPostFromRedisAsync(id);
 
-            if (posts.Count == 0)
+            if (gzippedPosts == null)
             {
                 return HttpNotFound();
             }
-
-            return Ok(posts);
+            
+            Response.Headers.Add("Content-Encoding", "gzip");
+            //Response.Headers.Add("X-Content-Encoding", "gzip");
+            return File(gzippedPosts, "application/json", null);
         }
 
     }

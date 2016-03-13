@@ -12,6 +12,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Forums.Controllers.Api
 {
@@ -23,12 +24,15 @@ namespace Forums.Controllers.Api
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly MapperConfiguration _mapperConfiguration;
+        private readonly IMemoryCache _memoryCache;
 
-        public ApiPostsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, MapperConfiguration mapperConfiguration)
+        public ApiPostsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, MapperConfiguration mapperConfiguration
+            ,IMemoryCache memoryCache)
         {
             _context = context;
             _userManager = userManager;
             _mapperConfiguration = mapperConfiguration;
+            _memoryCache = memoryCache;
         }
 
         // GET: api/Posts
@@ -43,6 +47,13 @@ namespace Forums.Controllers.Api
                 .ToListAsync();
 
             var models = _mapperConfiguration.CreateMapper().Map<List<Post>, List<PostListViewModel>>(results);
+            foreach (var model in models)
+            {
+                int viewsCount = -1;
+                var cacheKey = model.Id + ":ViewsCount";
+                if (_memoryCache.TryGetValue(cacheKey, out viewsCount))
+                    model.ViewCount = viewsCount;
+            }
 
             return Ok(models);
         }

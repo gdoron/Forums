@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Entities;
 using Forums.Extensions;
 using Forums.Filters;
@@ -28,9 +29,7 @@ namespace Forums.Controllers
 
         public IActionResult About()
         {
-
             ViewData["Message"] = "Your application TEST page.";
-
 
             return View();
         }

@@ -10,11 +10,13 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.WebEncoders;
 using Newtonsoft.Json;
+using StackExchange.Redis;
 
 namespace Forums
 {
@@ -40,7 +42,7 @@ namespace Forums
             Configuration = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; set; }
+        public IConfigurationRoot Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -52,18 +54,18 @@ namespace Forums
                 .AddSqlServer()
                 .AddDbContext<ApplicationDbContext>(options =>
                     options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"])
-                    //options.UseSqlServer(connection)
-                    //options.UseSqlServer(Configuration["ConnectionString"])
-                        .CommandTimeout(30)
-                        .MaxBatchSize(1000));
+                        //options.UseSqlServer(connection)
+                        //options.UseSqlServer(Configuration["ConnectionString"])
+                        .CommandTimeout(30));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddMvc().AddJsonOptions(options => {
+            services.AddMvc().AddJsonOptions(options =>
+            {
                 options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                options.SerializerSettings.DefaultValueHandling = DefaultValueHandling.Include;
+                options.SerializerSettings.DefaultValueHandling = DefaultValueHandling.Ignore;
             });
 
             // Add application services.
@@ -94,6 +96,14 @@ namespace Forums
             });
             services.AddInstance(config);
 
+            var redisConnectionString = Configuration["Data:RedisConnection"];
+            var redis = ConnectionMultiplexer.Connect(redisConnectionString);
+
+            services.AddInstance(redis);
+            services.AddTransient<PostsCacher2>();
+
+
+            services.AddCaching();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -177,11 +187,14 @@ namespace Forums
 
             // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
 
+            //app.UseCompression();
             app.UseMvc(routes =>
             {
                 routes.MapRoute("default", "{controller=Home}/{action=Index}/{id?}");
                 //routes.MapRoute("DefaultApiPost", "Api/{controller}/{action}");
             });
+
+
         }
 
         // Entry point for the application.

@@ -43,5 +43,7 @@ namespace Entities
         public int Score { get; set; }
 
         public List<Vote> Votes { get; set; }
+
+        public int Views { get; set; }
     }
 }

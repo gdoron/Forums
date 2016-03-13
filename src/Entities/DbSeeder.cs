@@ -108,7 +108,7 @@ namespace Entities
             var var = "סקופים";
             var scoops = _context.Forums.Single(x => x.Name == var);
 
-            for (var i = 1; i <= 300; i++)
+            for (var i = 1; i <= 30; i++)
             {
                 var firstPost = new Post
                                     {
@@ -118,6 +118,19 @@ namespace Entities
                                         Body = "Bla bla bla",
                                         PostType = PostType.News | PostType.Foreign
                                     };
+
+
+                _context.AddRange(Enumerable.Range(1, 100).Select(x =>
+                    new Post
+                        {
+                            Forum = scoops,
+                            Title = "LLLLLLLLLOOOOOOOOOOOOOOOOOPPPPPPPPPPP! " + x,
+                            Body =
+                                "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO NNNNNNNNNNNNNNNNNNNNNNN GGGGGGGGGGGGGGGGGGGGGG TEXT LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO NNNNNNNNNNNNNNNNNNNNNNN GGGGGGGGGGGGGGGGGGGGGG TEXT LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO NNNNNNNNNNNNNNNNNNNNNNN GGGGGGGGGGGGGGGGGGGGGG TEXT LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO NNNNNNNNNNNNNNNNNNNNNNN GGGGGGGGGGGGGGGGGGGGGG TEXT LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO NNNNNNNNNNNNNNNNNNNNNNN GGGGGGGGGGGGGGGGGGGGGG TEXT LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO NNNNNNNNNNNNNNNNNNNNNNN GGGGGGGGGGGGGGGGGGGGGG TEXT LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO NNNNNNNNNNNNNNNNNNNNNNN GGGGGGGGGGGGGGGGGGGGGG TEXT LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO NNNNNNNNNNNNNNNNNNNNNNN GGGGGGGGGGGGGGGGGGGGGG TEXT ",
+                            ReplyToPost = firstPost,
+                            User = secondUser
+                        }).ToList());
+
                 var reply1 = new Post
                                  {
                                      Forum = scoops,
