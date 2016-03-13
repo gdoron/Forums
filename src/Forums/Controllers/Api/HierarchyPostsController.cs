@@ -10,9 +10,9 @@ namespace Forums.Controllers.Api
     {
         private readonly ApplicationDbContext _context;
         //private readonly PostsCacher _postsCacher;
-        private readonly PostsCacher2 _postsCacher;
+        private readonly PostsCacher _postsCacher;
 
-        public HierarchyPostsController(ApplicationDbContext context, PostsCacher2 postsCacher)
+        public HierarchyPostsController(ApplicationDbContext context, PostsCacher postsCacher)
         {
             _context = context;
             _postsCacher = postsCacher;

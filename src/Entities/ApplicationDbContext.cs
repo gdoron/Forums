@@ -47,7 +47,8 @@ select * from HierarchyPosts where RootId =(
                                             where ReplyToPostId is null)", postId)
                 .OrderBy(x => x.ReplyToPostId ?? -1)
                 .ThenByDescending(x => x.IsImportantReply)
-                .ThenBy(x => x.PostId).ToListAsync();
+                .ThenBy(x => x.PostId)
+                .ToListAsync();
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

@@ -65,7 +65,7 @@ namespace Forums
             services.AddMvc().AddJsonOptions(options =>
             {
                 options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                options.SerializerSettings.DefaultValueHandling = DefaultValueHandling.Ignore;
+                options.SerializerSettings.DefaultValueHandling = DefaultValueHandling.Include;
             });
 
             // Add application services.
@@ -100,7 +100,7 @@ namespace Forums
             var redis = ConnectionMultiplexer.Connect(redisConnectionString);
 
             services.AddInstance(redis);
-            services.AddTransient<PostsCacher2>();
+            services.AddTransient<PostsCacher>();
 
 
             services.AddCaching();
