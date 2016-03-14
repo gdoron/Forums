@@ -45,5 +45,8 @@ namespace Entities
         public List<Vote> Votes { get; set; }
 
         public int Views { get; set; }
+
+        public bool IsOriginal { get; set; }
+        public string SourceLink { get; set; }
     }
 }

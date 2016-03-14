@@ -21,5 +21,7 @@ namespace Entities
         public int PositiveReviewsScore { get; set; }
         public int NegativeReviewsScore { get; set; }
         public int Views { get; set; }
+        public bool IsOriginal { get; set; }
+        public string SourceLink { get; set; }
     }
 }
