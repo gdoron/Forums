@@ -7,41 +7,44 @@
 
   "dependencies": {
     "Entities": "1.0.0-*",
-    "EntityFramework.Commands": "7.0.0-rc1-final",
-    "EntityFramework.MicrosoftSqlServer": "7.0.0-rc1-final",
+    "EntityFramework.Commands": "7.0.0-*",
+    "EntityFramework.MicrosoftSqlServer": "7.0.0-rc-*",
     "log4net": "2.0.5",
-    "Microsoft.AspNet.Authentication.Cookies": "1.0.0-rc1-final",
-    "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-rc1-final",
-    "Microsoft.AspNet.Authentication.Facebook": "1.0.0-rc1-final",
-    "Microsoft.AspNet.IISPlatformHandler": "1.0.0-rc1-final",
-    "Microsoft.AspNet.Mvc": "6.0.0-rc1-final",
-    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-rc1-final",
-    "Microsoft.AspNet.Server.Kestrel": "1.0.0-rc1-final",
-    "Microsoft.AspNet.StaticFiles": "1.0.0-rc1-final",
-    "Microsoft.AspNet.Tooling.Razor": "1.0.0-rc1-final",
+    "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
+    "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
+    "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
+    "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNet.Mvc": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+    "Microsoft.AspNet.Tooling.Razor": "1.0.0-*",
     "Microsoft.Extensions.CodeGenerators.Mvc": "1.0.0-rc1-final",
-    "Microsoft.Extensions.Configuration.FileProviderExtensions": "1.0.0-rc1-final",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0-rc1-final",
-    "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-rc1-final",
-    "Microsoft.Extensions.Logging": "1.0.0-rc1-final",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-final",
-    "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.0.0-rc1-final",
-    "Microsoft.AspNet.Authentication.Google": "1.0.0-rc1-final",
+    "Microsoft.Extensions.Configuration.FileProviderExtensions": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*",
+    "Microsoft.Extensions.Logging": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+    "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.0.0-*",
+    "Microsoft.AspNet.Authentication.Google": "1.0.0-*",
     "Sendgrid": "6.3.4",
-    "Microsoft.AspNet.Identity": "3.0.0-rc1-final",
+    "Microsoft.AspNet.Identity": "3.0.0-*",
     "AutoMapper": "4.2.0",
     "CommonMark.NET": "0.11.0",
     "HtmlSanitizer": "3.1.93",
-    "StackExchange.Redis": "1.0.488"
+    "StackExchange.Redis": "1.0.488",
+    "Microsoft.AspNet.SignalR.Server": "3.0.0-*",
+    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*"
   },
 
   "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel",
-    "ef": "EntityFramework.Commands"
+    "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000",
+    "ef": "EntityFramework.Commands",
   },
 
   "frameworks": {
-    "dnx46": { }
+    "dnx451": { }
   },
 
   "exclude": [

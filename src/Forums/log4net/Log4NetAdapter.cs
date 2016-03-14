@@ -1,5 +1,6 @@
 ﻿using System;
 using log4net;
+using Microsoft.AspNet.Routing.Logging.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Forums.log4net
@@ -18,29 +19,7 @@ namespace Forums.log4net
             return null;
         }
 
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            switch (logLevel)
-            {
-                case LogLevel.Verbose:
-                case LogLevel.Debug:
-                    return false;
-                    return _logger.IsDebugEnabled;
-                case LogLevel.Information:
-                    return false;
-                    return _logger.IsInfoEnabled;
-                case LogLevel.Warning:
-                    return _logger.IsWarnEnabled;
-                case LogLevel.Error:
-                    return _logger.IsErrorEnabled;
-                case LogLevel.Critical:
-                    return _logger.IsFatalEnabled;
-                default:
-                    throw new ArgumentException($"Unknown log level {logLevel}.", nameof(logLevel));
-            }
-        }
-
-        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
             {
@@ -53,7 +32,6 @@ namespace Forums.log4net
 
             switch (logLevel)
             {
-                case LogLevel.Verbose:
                 case LogLevel.Debug:
                     _logger.Debug(message, exception);
                     break;
@@ -73,6 +51,27 @@ namespace Forums.log4net
                     _logger.Warn($"Encountered unknown log level {logLevel}, writing out as Info.");
                     _logger.Info(message, exception);
                     break;
+            }
+        }
+
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            switch (logLevel)
+            {
+                case LogLevel.Debug:
+                    return false;
+                    return _logger.IsDebugEnabled;
+                case LogLevel.Information:
+                    return false;
+                    return _logger.IsInfoEnabled;
+                case LogLevel.Warning:
+                    return _logger.IsWarnEnabled;
+                case LogLevel.Error:
+                    return _logger.IsErrorEnabled;
+                case LogLevel.Critical:
+                    return _logger.IsFatalEnabled;
+                default:
+                    throw new ArgumentException($"Unknown log level {logLevel}.", nameof(logLevel));
             }
         }
     }

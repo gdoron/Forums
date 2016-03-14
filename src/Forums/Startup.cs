@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using AutoMapper;
 using Entities;
 using Forums.Filters;
@@ -8,7 +9,9 @@ using Forums.Services;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +20,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.WebEncoders;
 using Newtonsoft.Json;
 using StackExchange.Redis;
+using IHostingEnvironment = Microsoft.AspNet.Hosting.IHostingEnvironment;
 
 namespace Forums
 {
@@ -69,12 +73,12 @@ namespace Forums
             });
 
             // Add application services.
-            services.AddTransient<IEmailSender, AuthMessageSender>();
-            services.AddTransient<ISmsSender, AuthMessageSender>();
+            //services.AddTransient<IEmailSender, AuthMessageSender>();
+            //services.AddTransient<ISmsSender, AuthMessageSender>();
             services.AddTransient<EntityFrameworkFilter>();
             services.AddTransient<DbSeeder>();
 
-            services.Configure<AuthMessageSenderOptions>(Configuration);
+            //services.Configure<AuthMessageSenderOptions>(Configuration);
 
 
             var config = new MapperConfiguration(cfg =>
@@ -94,12 +98,12 @@ namespace Forums
                     .ForMember(d => d.RecipientUserName, options => options.MapFrom(s => s.Recipient.UserName));
 
             });
-            services.AddInstance(config);
+            services.AddSingleton(config);
 
             var redisConnectionString = Configuration["Data:RedisConnection"];
             var redis = ConnectionMultiplexer.Connect(redisConnectionString);
 
-            services.AddInstance(redis);
+            services.AddSingleton(redis);
             services.AddTransient<PostsCacher>();
 
 
@@ -121,7 +125,7 @@ namespace Forums
 
             if (env.IsDevelopment())
             {
-                app.UseBrowserLink();
+                //app.UseBrowserLink();
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
             }
@@ -140,12 +144,12 @@ namespace Forums
             {
                 options.AppId = Configuration["Authentication:Facebook:AppId"];
                 options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
-                options.Events = new OAuthEvents()
+                options.Events = new OAuthEvents
                                      {
-                                         OnRemoteError = ctx =>
+                                         OnRemoteFailure = ctx =>
 
                                          {
-                                             ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.UrlEncode(ctx.Error.Message));
+                                             ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
                                              ctx.HandleResponse();
                                              return Task.FromResult(0);
                                          }
@@ -198,6 +202,15 @@ namespace Forums
         }
 
         // Entry point for the application.
-        public static void Main(string[] args) => WebApplication.Run<Startup>(args);
+        public static void Main(string[] args)
+        {
+            var host = new WebHostBuilder()
+                .UseDefaultConfiguration(args)
+                .UseIISPlatformHandlerUrl()
+                .UseStartup("Forums")
+                .UseServer("Microsoft.AspNet.Server.Kestrel")
+                .Build();
+            host.Run();
+        }
     }
 }
