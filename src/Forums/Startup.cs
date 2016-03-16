@@ -1,4 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.WebSockets;
+using System.Security.Claims;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoMapper;
 using Entities;
 using Forums.Filters;
@@ -9,6 +15,7 @@ using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNet.WebSockets.Server;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
@@ -100,6 +107,8 @@ namespace Forums
             var redis = ConnectionMultiplexer.Connect(redisConnectionString);
 
             services.AddInstance(redis);
+            var messageHub = new RedisMessagesHub(redis);
+            services.AddInstance(messageHub);
             services.AddTransient<PostsCacher>();
 
 
@@ -107,7 +116,7 @@ namespace Forums
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public async void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, DbSeeder dbSeeder)
+        public async void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, DbSeeder dbSeeder, RedisMessagesHub messagesHub)
         {
             loggerFactory.AddProvider(new Log4NetProvider());
 
@@ -151,6 +160,50 @@ namespace Forums
                                          }
                                      };
             });
+
+            app.Map("/Sockets", managedWebSocketsApp =>
+            {
+                // Comment this out to test native server implementations
+                managedWebSocketsApp.UseWebSockets(new WebSocketOptions()
+                {
+                    ReplaceFeature = true,
+                });
+
+                managedWebSocketsApp.Use(async (context, next) =>
+                {
+                    if (context.WebSockets.IsWebSocketRequest)
+                    {
+                        var userId = context.User.GetUserId();
+                        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        await HandleSocket(messagesHub, webSocket, userId);
+                        return;
+                    }
+                    await next();
+                });
+            });
+
+
+            //app.Map("/Sockets", managedWebSocketsApp =>
+            //{
+            //    // Comment this out to test native server implementations
+            //    managedWebSocketsApp.UseWebSockets(new WebSocketOptions()
+            //    {
+            //        ReplaceFeature = true,
+            //    });
+
+            //    managedWebSocketsApp.Use(async (context, next) =>
+            //    {
+            //        if (context.WebSockets.IsWebSocketRequest)
+            //        {
+            //            var id = context.User.GetUserId();
+            //            Console.WriteLine("Echo: " + context.Request.Path);
+            //            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+            //            await Echo(webSocket);
+            //            return;
+            //        }
+            //        await next();
+            //    });
+            //});
 
 
             //app.UseOAuthAuthentication(new OAuthOptions
@@ -199,5 +252,29 @@ namespace Forums
 
         // Entry point for the application.
         public static void Main(string[] args) => WebApplication.Run<Startup>(args);
+
+        private async Task HandleSocket(RedisMessagesHub messagesHub, WebSocket webSocket, string userId)
+        {
+            byte[] buffer = new byte[1024 * 4];
+            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            string postId = Encoding.UTF8.GetString(buffer, 0, result.Count);
+            var socketId = Guid.NewGuid().ToString();
+
+            messagesHub.Subscribe(webSocket, socketId, userId, postId);
+            if (result.CloseStatus != null)
+            {
+                Set.Remove(webSocket);
+            }
+            while (!result.CloseStatus.HasValue)
+            {
+                //await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            }
+
+            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+            messagesHub.Unsubscribe(webSocket, socketId, userId, postId);
+        }
+
+        static readonly HashSet<WebSocket> Set = new HashSet<WebSocket>();
     }
 }

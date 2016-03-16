@@ -69,5 +69,16 @@
         </environment>
 
         @RenderSection("scripts", required: false)
+    <script>
+        var url = 'ws://' + location.hostname + (location.port ? ':' + location.port : '');
+
+        var webSocket = new WebSocket(url + "/sockets")
+        webSocket.onmessage = function(event) {
+            console.log(event.data);
+        }
+        webSocket.onopen = function() {
+            webSocket.send("2101");
+        };
+    </script>
     </body>
 </html>
