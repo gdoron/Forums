@@ -149,7 +149,7 @@ namespace Forums
             {
                 options.AppId = Configuration["Authentication:Facebook:AppId"];
                 options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
-                options.Events = new OAuthEvents()
+                options.Events = new OAuthEvents
                                      {
                                          OnRemoteError = ctx =>
 
@@ -161,50 +161,7 @@ namespace Forums
                                      };
             });
 
-            app.Map("/Sockets", managedWebSocketsApp =>
-            {
-                // Comment this out to test native server implementations
-                managedWebSocketsApp.UseWebSockets(new WebSocketOptions()
-                {
-                    ReplaceFeature = true,
-                });
-
-                managedWebSocketsApp.Use(async (context, next) =>
-                {
-                    if (context.WebSockets.IsWebSocketRequest)
-                    {
-                        var userId = context.User.GetUserId();
-                        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                        await HandleSocket(messagesHub, webSocket, userId);
-                        return;
-                    }
-                    await next();
-                });
-            });
-
-
-            //app.Map("/Sockets", managedWebSocketsApp =>
-            //{
-            //    // Comment this out to test native server implementations
-            //    managedWebSocketsApp.UseWebSockets(new WebSocketOptions()
-            //    {
-            //        ReplaceFeature = true,
-            //    });
-
-            //    managedWebSocketsApp.Use(async (context, next) =>
-            //    {
-            //        if (context.WebSockets.IsWebSocketRequest)
-            //        {
-            //            var id = context.User.GetUserId();
-            //            Console.WriteLine("Echo: " + context.Request.Path);
-            //            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-            //            await Echo(webSocket);
-            //            return;
-            //        }
-            //        await next();
-            //    });
-            //});
-
+            app.ConfigureForumsSockets(messagesHub, "/sockets");
 
             //app.UseOAuthAuthentication(new OAuthOptions
             //                               {
@@ -252,28 +209,6 @@ namespace Forums
 
         // Entry point for the application.
         public static void Main(string[] args) => WebApplication.Run<Startup>(args);
-
-        private async Task HandleSocket(RedisMessagesHub messagesHub, WebSocket webSocket, string userId)
-        {
-            byte[] buffer = new byte[1024 * 4];
-            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            string postId = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            var socketId = Guid.NewGuid().ToString();
-
-            messagesHub.Subscribe(webSocket, socketId, userId, postId);
-            if (result.CloseStatus != null)
-            {
-                Set.Remove(webSocket);
-            }
-            while (!result.CloseStatus.HasValue)
-            {
-                //await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            }
-
-            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-            messagesHub.Unsubscribe(webSocket, socketId, userId, postId);
-        }
 
         static readonly HashSet<WebSocket> Set = new HashSet<WebSocket>();
     }

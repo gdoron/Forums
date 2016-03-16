@@ -79,6 +79,13 @@
         webSocket.onopen = function() {
             webSocket.send("2101");
         };
+        webSocket.onclose = function(e) {
+            console.log(e)
+        }
+
+        webSocket.onerror = function (e) {
+            console.log(e)
+        }
     </script>
     </body>
 </html>

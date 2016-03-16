@@ -3,9 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.WebSockets.Server;
 using StackExchange.Redis;
 
 namespace Forums
@@ -14,64 +17,81 @@ namespace Forums
     {
         private readonly ConnectionMultiplexer _redis;
 
-        //private ConcurrentDictionary<string, List<ISubscriber>> _subscribersDictionary = new ConcurrentDictionary<string, List<ISubscriber>>();
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, WebSocket>> _roomsDictionary =
             new ConcurrentDictionary<string, ConcurrentDictionary<string, WebSocket>>();
 
-        //private readonly ConcurrentDictionary<string, WebSocket> _webSockets = new ConcurrentDictionary<string, WebSocket>(); 
+        private readonly ConcurrentDictionary<string, KeyValuePair<WebSocket, List<string>>> _webSockets =
+            new ConcurrentDictionary<string, KeyValuePair<WebSocket, List<string>>>();
+
+        private Timer _timer;
 
         public RedisMessagesHub(ConnectionMultiplexer redis)
         {
             _redis = redis;
+            _timer = new Timer(ScanForDeadSockets, null, 0, 30000);
+
         }
 
-        public void Subscribe(WebSocket webSocket, string socketId, string userId, string postId)
+        private void ScanForDeadSockets(object state)
         {
-            if (userId != null)
-            {
-                var userMessagesSockets = _roomsDictionary.GetOrAdd(userId, roomId =>
-                {
-                    _redis.GetSubscriber().Subscribe(userId, (channel, value) =>
-                    {
-                        PublishAsync(channel, $"New update in channel {channel}");
-                    });
-                    return new ConcurrentDictionary<string, WebSocket>();
-                });
-                userMessagesSockets.TryAdd(socketId, webSocket);
-            }
+            //foreach (var socket in _webSockets.Values)
+            //{
+            //    socket.Key.SendAsync()
+            //}
+        }
 
-            var postSockets = _roomsDictionary.GetOrAdd(postId, roomId =>
+        public void Subscribe(WebSocket webSocket, string socketId, string room)
+        {
+            if (string.IsNullOrWhiteSpace(room))
+                throw new ArgumentException("Invalid room", nameof(room));
+
+            _webSockets.AddOrUpdate(socketId, new KeyValuePair<WebSocket, List<string>>(webSocket,new List<string> {room}), (key, oldValue) =>
             {
-                _redis.GetSubscriber().Subscribe(postId, (channel, value) =>
-                {
-                    PublishAsync(channel, $"New update in channel {channel}");
-                });
+                oldValue.Value.Add(room);
+                return oldValue;
+            });
+
+
+            var roomSockets = _roomsDictionary.GetOrAdd(room, roomId =>
+            {
+                _redis.GetSubscriber().Subscribe(room, (channel, message) => { BroadcastMessageAsync(channel, $"Update in channel {channel}, value, message:{message}"); });
                 return new ConcurrentDictionary<string, WebSocket>();
             });
-            postSockets.TryAdd(socketId, webSocket);
-
-            //_webSockets.TryAdd(socketId, webSocket);
+            roomSockets.TryAdd(socketId, webSocket);
         }
 
-        public void Unsubscribe(WebSocket webSocket, string socketId, string userId, string postId)
+        public void Unsubscribe(string socketId, string room)
         {
-            WebSocket removedSocket;
-            //_webSockets.TryRemove(socketId, out removedSocket);
             ConcurrentDictionary<string, WebSocket> sockets;
-            if (_roomsDictionary.TryGetValue(userId, out sockets))
-            {
-                sockets.TryRemove(socketId, out removedSocket);
-            }
 
-            if (_roomsDictionary.TryGetValue(postId, out sockets))
+            if (_roomsDictionary.TryGetValue(room, out sockets))
             {
+                WebSocket removedSocket;
                 sockets.TryRemove(socketId, out removedSocket);
             }
         }
 
-        public async Task PublishAsync(string topic, string message)
+        public async Task DisposeWebSocket(string websocketId)
         {
-            await Task.Run(() =>
+            KeyValuePair<WebSocket, List<string>> socketRooms;
+            if (_webSockets.TryGetValue(websocketId, out socketRooms))
+            {
+                foreach (var room in socketRooms.Value)
+                {
+                    ConcurrentDictionary<string, WebSocket> roomSockets;
+                    if (_roomsDictionary.TryGetValue(room, out roomSockets))
+                    {
+                        WebSocket removedWebSocket;
+                        roomSockets.TryRemove(websocketId, out removedWebSocket);
+                    }
+                }
+            }
+            await socketRooms.Key.CloseAsync(WebSocketCloseStatus.NormalClosure, "Bye Bye", CancellationToken.None);
+        }
+
+        private Task BroadcastMessageAsync(string topic, string message)
+        {
+            return Task.Run(() =>
             {
                 ConcurrentDictionary<string, WebSocket> sockets;
                 if (_roomsDictionary.TryGetValue(topic, out sockets))
@@ -81,6 +101,49 @@ namespace Forums
                     var tasks = sockets.Values.Select(webSocket => webSocket.SendAsync(seg, WebSocketMessageType.Text, true, CancellationToken.None)).ToArray();
                     Task.WaitAll(tasks);
                 }
+            });
+        }
+    }
+
+    public static class SocketIniter
+    {
+        public static void ConfigureForumsSockets(this IApplicationBuilder app, RedisMessagesHub messagesHub, string path)
+        {
+            app.Map(path, managedWebSocketsApp =>
+            {
+                // Comment this out to test native server implementations
+                managedWebSocketsApp.UseWebSockets(new WebSocketOptions {ReplaceFeature = true});
+
+                managedWebSocketsApp.Use(async (context, next) =>
+                {
+                    if (!context.WebSockets.IsWebSocketRequest)
+                    {
+                        await next();
+                    }
+                    else
+                    {
+                        var userId = context.User.GetUserId();
+                        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        byte[] buffer = new byte[1024*4];
+                        WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                        string postId = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                        var socketId = Guid.NewGuid().ToString();
+
+                        if (userId != null)
+                            messagesHub.Subscribe(webSocket, socketId, userId);
+
+                        messagesHub.Subscribe(webSocket, socketId, postId);
+
+
+                        while (!result.CloseStatus.HasValue)
+                        {
+                            result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                        }
+
+                        //await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                        await messagesHub.DisposeWebSocket(socketId);
+                    }
+                });
             });
         }
     }
