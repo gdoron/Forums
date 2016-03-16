@@ -8,12 +8,14 @@
         <environment names="Development">
             <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
             <link rel="stylesheet" href="~/css/site.css" />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.css" />
         </environment>
         <environment names="Staging,Production">
             <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.5/css/bootstrap.min.css"
                   asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
                   asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
-            <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+            <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true"/>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" />
         </environment>
     </head>
     <body>
@@ -67,14 +69,17 @@
             </script>
             <script src="~/js/site.min.js" asp-append-version="true"></script>
         </environment>
-
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"
+                asp-fallback-src="~~/lib/toastr/toastr.min.js"
+                asp-fallback-test="window.toastr">
+        </script>
         @RenderSection("scripts", required: false)
     <script>
         var url = 'ws://' + location.hostname + (location.port ? ':' + location.port : '');
 
         var webSocket = new WebSocket(url + "/sockets")
         webSocket.onmessage = function(event) {
-            console.log(event.data);
+            toastr.success(event.data);
         }
         webSocket.onopen = function() {
             webSocket.send("2101");
