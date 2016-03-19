@@ -13,7 +13,7 @@ using StackExchange.Redis;
 
 namespace Forums
 {
-    public class RedisMessagesHub
+    public class RedisMessagesHub : IDisposable
     {
         private readonly ConnectionMultiplexer _redis;
 
@@ -23,21 +23,30 @@ namespace Forums
         private readonly ConcurrentDictionary<string, KeyValuePair<WebSocket, List<string>>> _webSockets =
             new ConcurrentDictionary<string, KeyValuePair<WebSocket, List<string>>>();
 
-        private Timer _timer;
+        private readonly Timer _timer;
 
         public RedisMessagesHub(ConnectionMultiplexer redis)
         {
             _redis = redis;
-            _timer = new Timer(ScanForDeadSockets, null, 0, 30000);
-
+            _timer = new Timer(ScanForDeadSockets, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
         }
 
         private void ScanForDeadSockets(object state)
         {
-            //foreach (var socket in _webSockets.Values)
-            //{
-            //    socket.Key.SendAsync()
-            //}
+            foreach (var socket in _webSockets)
+            {
+                if (socket.Value.Key.State >= WebSocketState.Closed)
+                {
+                    KeyValuePair<WebSocket, List<string>> doNotNeed;
+                    _webSockets.TryRemove(socket.Key, out doNotNeed);
+
+                    foreach (var room in socket.Value.Value)
+                    {
+                        ConcurrentDictionary<string, WebSocket> removedSocket;
+                        _roomsDictionary.TryRemove(room, out removedSocket);
+                    }
+                }
+            }
         }
 
         public void Subscribe(WebSocket webSocket, string socketId, string room)
@@ -103,6 +112,11 @@ namespace Forums
                 }
             });
         }
+
+        public void Dispose()
+        {
+            _timer.Dispose();
+        }
     }
 
     public static class SocketIniter
@@ -112,7 +126,7 @@ namespace Forums
             app.Map(path, managedWebSocketsApp =>
             {
                 // Comment this out to test native server implementations
-                managedWebSocketsApp.UseWebSockets(new WebSocketOptions {ReplaceFeature = true});
+                managedWebSocketsApp.UseWebSockets(new WebSocketOptions {ReplaceFeature = true, KeepAliveInterval= TimeSpan.FromSeconds(5)});
 
                 managedWebSocketsApp.Use(async (context, next) =>
                 {
@@ -133,7 +147,6 @@ namespace Forums
                             messagesHub.Subscribe(webSocket, socketId, userId);
 
                         messagesHub.Subscribe(webSocket, socketId, postId);
-
 
                         while (!result.CloseStatus.HasValue)
                         {

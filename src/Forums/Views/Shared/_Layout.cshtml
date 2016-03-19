@@ -75,11 +75,29 @@
         </script>
         @RenderSection("scripts", required: false)
     <script>
-        var url = 'ws://' + location.hostname + (location.port ? ':' + location.port : '');
+        toastr.options.timeOut = 0;
+        function spawnNotification(theBody, theTitle, urlToOpen) {
+            var options = {
+                body: theBody,
+                icon: "https://scontent.fsdv1-1.fna.fbcdn.net/hprofile-xtp1/v/t1.0-1/p50x50/12188890_883747905008065_6429536769254854140_n.png?oh=b7c77a5612b739c9782ad6fa128abb60&oe=578CC64C"
+            }
+            var n = new Notification(theTitle, options);
+            n.onclick = function () {
+                //window.focus();
+                n.close();
+                var windowObjectReference = window.open(urlToOpen, "WOOHOO! rotter");
+                windowObjectReference.focus();
+            };
+        }
+        if ("Notification" in  window)
+            Notification.requestPermission();
+        var url = location.protocol === "https:" ? 'wss://' : "ws://" + location.hostname + (location.port ? ':' + location.port : '');
 
         var webSocket = new WebSocket(url + "/sockets")
-        webSocket.onmessage = function(event) {
+        webSocket.onmessage = function (event) {
             toastr.success(event.data);
+            if ("Notification" in window && Notification.permission === "granted")
+                spawnNotification(event.data, "Update in rotter amigo", "/api/hierarchyposts/2101");
         }
         webSocket.onopen = function() {
             webSocket.send("2101");
@@ -88,7 +106,7 @@
             console.log(e)
         }
 
-        webSocket.onerror = function (e) {
+        webSocket.onerror = function(e) {
             console.log(e)
         }
     </script>
