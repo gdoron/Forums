@@ -83,10 +83,10 @@
             }
             var n = new Notification(theTitle, options);
             n.onclick = function () {
-                //window.focus();
+                window.focus();
                 n.close();
-                var windowObjectReference = window.open(urlToOpen, "WOOHOO! rotter");
-                windowObjectReference.focus();
+                //var windowObjectReference = window.open(urlToOpen, "WOOHOO! rotter");
+                //windowObjectReference.focus();
             };
         }
         if ("Notification" in  window)
