@@ -54,14 +54,14 @@ namespace Forums
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //var connection = @"Server=(localdb)\mssqllocaldb;Database=EFGetStarted.AspNet5.NewDb;Trusted_Connection=True;";
+            var connection = @"Server=(localdb)\mssqllocaldb;Database=EFGetStarted.AspNet5.NewDb;Trusted_Connection=True;";
 
             // Add framework services.
             services.AddEntityFramework()
                 .AddSqlServer()
                 .AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"])
-                        //options.UseSqlServer(connection)
+                    //options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"])
+                        options.UseSqlServer(connection)
                         //options.UseSqlServer(Configuration["ConnectionString"])
                         .CommandTimeout(30));
 

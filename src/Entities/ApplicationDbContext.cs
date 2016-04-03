@@ -43,9 +43,10 @@ select * from HierarchyPosts where RootId =(
                                             select top 1 Id
                                             from PostsCTE
                                             where ReplyToPostId is null)", postId)
-                .OrderBy(x => x.ReplyToPostId ?? -1)
-                .ThenByDescending(x => x.IsImportantReply)
-                .ThenBy(x => x.PostId);
+                .Select(x => new HierarchyPost
+                                 {
+                                     Body = "not going to see this"
+                                 });
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

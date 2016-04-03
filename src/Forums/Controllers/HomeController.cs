@@ -1,9 +1,11 @@
-﻿using Entities;
+﻿using System;
+using Entities;
 using Forums.Extensions;
 using Forums.Filters;
 using Forums.ViewModels.Home;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace Forums.Controllers
 {
@@ -21,6 +23,11 @@ namespace Forums.Controllers
 
         public IActionResult Index()
         {
+            var x = _context.GeHierarchyPostBySon(2).ToList();
+            var body = x.First().Body;
+            if (body == "not going to see this")
+                throw new WorldCameToAnEndException();
+
             return View();
         }
 
@@ -58,5 +65,10 @@ namespace Forums.Controllers
         {
             return View();
         }
+    }
+
+    public class WorldCameToAnEndException : Exception
+    {
+        
     }
 }
